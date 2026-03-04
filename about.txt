@@ -1,0 +1,613 @@
+================================================================================
+                              RL4VLM - ABOUT
+          Fine-Tuning Large Vision-Language Models as Decision-Making
+                    Agents via Reinforcement Learning
+================================================================================
+
+Paper:    https://arxiv.org/abs/2405.10292  (arXiv:2405.10292)
+Project:  https://rl4vlm.github.io/
+Venue:    NeurIPS 2024 (The Thirty-eighth Annual Conference on Neural
+          Information Processing Systems)
+License:  MIT
+
+Authors:
+  Yuexiang Zhai* (UC Berkeley, Project Lead)
+  Hao Bai†      (UIUC)
+  Zipeng Lin†   (UC Berkeley)
+  Jiayi Pan†    (UC Berkeley)
+  Shengbang Tong† (NYU)
+  Yifei Zhou†   (UC Berkeley)
+  Alane Suhr    (UC Berkeley)
+  Saining Xie   (NYU)
+  Yann LeCun    (NYU)
+  Yi Ma          (UC Berkeley)
+  Sergey Levine  (UC Berkeley)
+  (* Lead, † Equal Contribution)
+
+Status:   ARCHIVED (Dec 15, 2024) - no longer actively maintained due to
+          package dependency issues.
+
+================================================================================
+1. WHAT THIS REPO IS
+================================================================================
+
+RL4VLM is the official code release for the paper "Fine-Tuning Large
+Vision-Language Models as Decision-Making Agents via Reinforcement Learning."
+
+The core idea: instead of only using supervised fine-tuning (SFT) with static
+instruction-following datasets, this work directly fine-tunes an entire
+Vision-Language Model (VLM) end-to-end using Reinforcement Learning (RL) so it
+can act as a decision-making agent in multi-step, goal-directed, interactive
+environments that require BOTH visual recognition AND language reasoning.
+
+The backbone VLM used is LLaVA-v1.6-Mistral-7B. The RL algorithm is PPO
+(Proximal Policy Optimization). A critical design choice is the use of
+Chain-of-Thought (CoT) reasoning during RL training, which the paper shows is
+essential for good performance.
+
+Key result: a 7B-parameter open-source model trained with this framework
+outperforms commercial models like GPT-4V and Gemini on the tested
+decision-making tasks.
+
+================================================================================
+2. THE RESEARCH PAPER - DETAILED SUMMARY
+================================================================================
+
+2.1 PROBLEM STATEMENT
+---------------------
+Large VLMs fine-tuned on visual instruction-following data are impressive at
+language reasoning, but supervised fine-tuning (SFT) alone is insufficient for
+learning optimal decision-making in multi-step interactive environments. SFT
+operates on pre-collected static datasets without environment interaction. If
+those datasets lack diversity for the decision-making scenarios at hand, the
+agent's capabilities will be limited.
+
+2.2 PROPOSED SOLUTION
+---------------------
+An algorithmic framework that fine-tunes VLMs with RL:
+
+  Step 1 - PROMPT: At each time step t, the VLM receives a visual observation
+  o_t (an RGB image) and a text prompt v_t^in that contains:
+    - A task description
+    - The legal action space
+    - The desired output format (including CoT reasoning instructions)
+
+  Step 2 - GENERATE: The VLM generates open-ended text output v_t^out in a
+  structured JSON format containing:
+    - "thoughts": Chain-of-Thought reasoning (blue in the paper's figures)
+    - "action": The chosen text-based action (red in the paper's figures)
+
+  Step 3 - POST-PROCESS: A function f parses the text output to extract a
+  legal action a_t. If the output does not contain a valid "action": keyword,
+  a random legal action is selected (random exploration fallback):
+    f(v_out) = a  if "action":"a" is found in v_out
+             = Uniform(A)  otherwise
+
+  Step 4 - INTERACT: The legal action a_t is fed to the environment, which
+  returns a reward r_t and next observation o_{t+1}.
+
+  Step 5 - RL UPDATE: The collected (state, action, reward) trajectories are
+  used to update the entire VLM via PPO.
+
+2.3 KEY TECHNICAL CONTRIBUTION: ACTION PROBABILITY ESTIMATION WITH CoT
+-----------------------------------------------------------------------
+A naive approach computes log pi(a_t | o_t, v_t^in) by summing the
+log-likelihood of ALL output tokens (both CoT and action tokens). But the CoT
+portion v_t^tht typically has MUCH larger absolute log-probability than the
+action portion v_t^act (e.g., -37.6 vs -0.4 on Blackjack), drowning out the
+action signal in the policy gradient.
+
+Solution: a scaling factor lambda in [0, 1] to downweight CoT tokens:
+
+  log pi(a_t | o_t, v_t^in) = lambda * log pi(v_t^tht | o_t, v_t^in)
+                              + log pi(v_t^act | o_t, v_t^in, v_t^tht)
+
+The paper finds lambda between 0.2 and 0.5 works best. Extreme values
+(lambda >= 0.7 or lambda <= 0.1) degrade performance. In the code, this is
+the --thought-prob-coef argument.
+
+2.4 TRAINING PIPELINE
+---------------------
+  Phase 1 - Supervised Fine-Tuning (SFT):
+    - Start from llava-v1.6-mistral-7b pretrained checkpoint
+    - Fine-tune for 1 epoch on task-specific instruction-following data
+    - For gym_cards: expert solver-generated data (20k-50k samples per task)
+    - For ALFWorld: GPT-4V-collected data (~1k episodes, ~45k samples)
+    - Two versions: with CoT and without CoT
+
+  Phase 2 - RL Training (PPO):
+    - Start from the SFT checkpoint
+    - Train all three LLaVA components via LoRA (r=128, alpha=256, dropout=0.05):
+      * CLIP ViT-L/14 vision encoder
+      * Mistral-7B LLM backbone
+      * MLP projector connecting vision to language
+    - 3-layer MLP value head on top of last hidden state for V(s) estimation
+    - GAE (Generalized Advantage Estimation) for return/advantage computation
+    - Cosine annealing LR schedule: init 1e-5, final 1e-9, max steps 25
+    - DeepSpeed ZeRO-2 for multi-GPU training
+    - lambda = 0.5 for gym_cards, 0.2 for ALFWorld
+
+2.5 EVALUATION TASKS
+--------------------
+Two domains:
+
+  A) GYM_CARDS (original, fine-grained visual recognition + arithmetic):
+    1. NumberLine   - Move a number to a target on a number line (+/-)
+                      Deterministic, simplest task, 2-action space
+    2. EZPoints     - Use 2 cards to form a formula equaling 12
+                      Deterministic, 13-action space
+    3. Points24     - Use 4 cards to form a formula equaling 24
+                      Deterministic, harder, 17-action space
+    4. Blackjack    - Win a blackjack game (hit/stand)
+                      Stochastic, 2-action space
+
+  B) ALFWORLD (embodied AI, visual semantic reasoning):
+    - 6 task types: Pick & Place, Examine in Light, Clean & Place,
+      Heat & Place, Cool & Place, Pick Two & Place
+    - State-dependent admissible action space
+    - Text-based actions like "go to shelf 1", "take mug from countertop"
+
+2.6 RESULTS
+-----------
+  gym_cards average success rates (%):
+    CNN+RL:     31.5
+    GPT-4V:     25.4
+    Gemini:     28.6
+    LLaVA-sft:  18.4
+    RL4VLM:     45.5  (+27.1% over SFT, +14.0% over second-best)
+
+  ALFWorld average success rate (%):
+    GPT-4V:     19.4
+    LLaVA-sft:  17.7
+    RL4VLM:     21.7  (+4.0% over SFT, +2.3% over GPT-4V)
+
+  Task-specific highlights:
+    NumberLine: 89.4% (RL4VLM) vs 65.5% (GPT-4V) vs 87.1% (CNN+RL)
+    EZPoints:   50.0% (RL4VLM) vs 10.5% (GPT-4V) vs 0% (CNN+RL)
+    Blackjack:  40.2% (RL4VLM) vs 25.5% (GPT-4V) vs 38.8% (CNN+RL)
+    Points24:   ~2.3% for all methods (remains very hard)
+
+  CoT ablation (with vs without):
+    NumberLine: 89.4% vs 26.9% (+62.5% with CoT)
+    EZPoints:   50.0% vs 29.9% (+20.1% with CoT)
+    ALFWorld:   21.7% vs 16.3% (+5.4% with CoT)
+    CoT is crucial for deterministic arithmetic tasks.
+
+2.7 LIMITATIONS
+---------------
+- Performance gain limited by action space size and task difficulty
+- ALFWorld gains smaller than gym_cards (larger action space, multi-task)
+- Points24 remains unsolved by all methods (perception + reasoning too hard)
+- Different prompting techniques not extensively explored
+- Hard-coded token IDs for '"action":' may break across tokenizer versions
+
+================================================================================
+3. REPOSITORY STRUCTURE
+================================================================================
+
+RL4VLM/
+|
+|-- README.md              Main project README with setup instructions
+|-- LICENSE.txt            MIT License
+|-- finetune.sh            Template SFT script (adapted from LLaVA finetune.sh)
+|-- diff_output.txt        Git diff of modifications to base LLaVA repo
+|
+|-- LLaVA/                 MODIFIED FORK OF LLAVA (backbone VLM)
+|   |-- llava/             Core LLaVA library
+|   |   |-- model/         Model definitions (LLaVA-LLaMA, LLaVA-Mistral)
+|   |   |-- train/         Training scripts
+|   |   |-- eval/          Evaluation scripts
+|   |   |-- serve/         Serving utilities
+|   |   |-- constants.py   Image token constants
+|   |   |-- conversation.py  Conversation templates
+|   |   |-- mm_utils.py    Multimodal utilities
+|   |-- scripts/           Shell scripts for various LLaVA tasks
+|   |-- docs/              Documentation
+|
+|-- gym-cards/             CUSTOM GYM ENVIRONMENT (original contribution)
+|   |-- gym_cards/
+|   |   |-- envs/
+|   |   |   |-- numberline.py    NumberLine game environment
+|   |   |   |-- ezpoints.py      EZPoints (compute 12) environment
+|   |   |   |-- points.py        Points24 (compute 24) environment
+|   |   |   |-- blackjack.py     Blackjack game environment
+|   |   |   |-- font/            Font files for rendering card images
+|   |   |   |-- img/             Card image assets
+|   |-- setup.py           Package installer
+|   |-- text_wrapper.py    Text-only wrapper for pure-text gym_cards usage
+|   |-- README.md          Environment documentation & API reference
+|   |-- play_gymcards.ipynb                Notebook demo
+|   |-- play_gymcards_test_text_wrap.ipynb  Text wrapper demo
+|
+|-- VLM_PPO/               RL TRAINING CODE FOR GYM_CARDS
+|   |-- main.py            Main entry point - training loop
+|   |-- patch.py           DeepSpeed xformers attention patch
+|   |-- setup.py           Package installer
+|   |-- requirements.txt   Python dependencies
+|   |-- a2c_ppo_acktr/     Core RL library
+|   |   |-- algo/
+|   |   |   |-- ppo.py           PPO algorithm implementation
+|   |   |-- llava_interface/
+|   |   |   |-- interface.py     VLM text generation & log-prob evaluation
+|   |   |   |-- utils.py         LLaVA model loading, LoRA setup
+|   |   |-- model.py             VLMPolicy & VLMValue network classes
+|   |   |-- rl_utils.py          Prompt construction & text-to-action parsing
+|   |   |-- storage.py           Rollout buffer for on-policy PPO
+|   |   |-- envs.py              Vectorized environment wrappers
+|   |   |-- arguments.py         All CLI argument definitions
+|   |   |-- distributions.py     Action distribution utilities
+|   |   |-- utils.py             General utilities
+|   |-- scripts/
+|   |   |-- config_zero2.yaml    DeepSpeed ZeRO-2 config
+|   |   |-- run_nl.sh            Run NumberLine training
+|   |   |-- run_ezp.sh           Run EZPoints training
+|   |   |-- run_p24.sh           Run Points24 training
+|   |   |-- run_bj.sh            Run Blackjack training
+|
+|-- VLM_PPO_ALF/            RL TRAINING CODE FOR ALFWORLD
+|   |-- main_alf.py         Main entry point (ALFWorld-specific)
+|   |-- alf_utils.py        ALFWorld environment utilities
+|   |-- alf-config.yaml     ALFWorld configuration
+|   |-- alf_conda.yml       Conda environment specification
+|   |-- patch.py            DeepSpeed xformers attention patch
+|   |-- a2c_ppo_acktr/      Same structure as VLM_PPO (separate copy)
+|   |-- scripts/
+|   |   |-- config_zero2.yaml    DeepSpeed ZeRO-2 config
+|   |   |-- run_alf.sh           Run ALFWorld training
+|
+|-- imgs/                   Teaser and demo images for README
+
+================================================================================
+4. HOW EACH COMPONENT WORKS (CODE-LEVEL ANALYSIS)
+================================================================================
+
+4.1 LLaVA/ (Modified Fork)
+---------------------------
+A slightly modified version of the original LLaVA repository
+(https://github.com/haotian-liu/LLaVA). The modifications are recorded in
+diff_output.txt. LLaVA is the backbone VLM. It consists of:
+  - CLIP ViT-L/14-336 vision encoder (processes RGB images into visual tokens)
+  - MLP projector (maps visual features to the LLM's embedding space)
+  - Mistral-7B LLM backbone (generates text from visual + text embeddings)
+
+The conversation template system (conv_templates) handles prompt formatting
+for different model versions (e.g., "llava_v1" for Vicuna-based,
+"mistral_instruct" for Mistral-based).
+
+4.2 gym-cards/ (Custom Gymnasium Environment)
+----------------------------------------------
+A pip-installable Gymnasium environment with 4 card games. Each environment:
+  - Returns RGB image observations (200x200 or 300x300 pixels)
+  - Accepts discrete integer actions
+  - Provides shaped rewards
+  - Is fully deterministic except Blackjack
+
+  NumberLine-v0:
+    obs: 200x200x3, actions: {0: "-", 1: "+"}, max_position: 5
+    reward: +1 at target, -1 for wrong direction, 0 otherwise
+    max steps: 2 * max_position
+
+  EZPoints-v0:
+    obs: 300x300x3, actions: {0-9: numbers 1-10, 10: "+", 11: "*", 12: "="}
+    reward: +10 for correct formula=12, -1 for illegal/wrong, 0 otherwise
+    max steps: 5
+
+  Points24-v0:
+    obs: 300x300x3, actions: 17 options (numbers + operators + parentheses + =)
+    reward: +10 for correct formula=24, -1 for illegal/wrong, 0 otherwise
+    max steps: 20
+
+  Blackjack-v0:
+    obs: pixel-based card images, actions: {0: "stand", 1: "hit"}
+    reward: +1 win, 0 draw, -1 loss, +1.5 for natural blackjack
+    Also supports is_pixel=False for symbolic observation
+
+4.3 VLM_PPO/ (Main RL Training - GymCards)
+-------------------------------------------
+
+  main.py - The complete training loop:
+    1. Initialize LLaVA model (with optional 4-bit or 8-bit quantization)
+    2. Apply LoRA adapters to all linear layers (r=128, alpha=256)
+    3. Create VLMValue (3-layer MLP value head on hidden states) and
+       VLMPolicy (wraps generation + value estimation)
+    4. Create vectorized gym environments
+    5. Construct task-specific prompt with CoT instructions
+    6. On-policy loop:
+       a. Collect num_steps transitions by:
+          - Processing observation through image_processor
+          - Generating text via llava_generate (sampling)
+          - Parsing text to action via text_projection
+          - Stepping environment, collecting rewards
+       b. Compute returns/advantages via GAE
+       c. Run ppo_epoch epochs of PPO updates with gradient accumulation
+       d. Periodically evaluate and log to wandb
+
+  a2c_ppo_acktr/llava_interface/interface.py - Two key functions:
+
+    llava_generate():
+      - Takes input_ids (prompt tokens) + image_tensor
+      - Calls base.prepare_inputs_labels_for_multimodal() to merge visual
+        and text embeddings
+      - Runs base.generate() with sampling (temperature, beam search)
+      - Returns: value estimate, output token IDs, decoded text, log probs
+
+    llava_evaluate():
+      - Re-runs the model on (input + output) in a single forward pass
+      - Computes per-token log probabilities from logits
+      - Locates the "action": boundary using hard-coded token IDs
+        [29908, 2467, 1115] for the Mistral tokenizer
+        *** WARNING: These token IDs are tokenizer-version-dependent! ***
+      - Splits log-probs into thought_log_prob and action_tokens_log_prob
+      - Applies thought_prob_coef (lambda) scaling:
+        sum_log_prob = lambda * thought_log_prob + action_tokens_log_prob
+      - Returns: value, scaled log prob, action-only log prob
+
+  a2c_ppo_acktr/model.py - Two classes:
+
+    VLMValue:
+      - Wraps the LLaVA base model
+      - Adds a 3-layer MLP value head: Linear(4096->1024) -> ReLU ->
+        Linear(1024->512) -> ReLU -> Linear(512->1)
+      - Takes last hidden state at the final token position as input
+      - Outputs scalar value estimate V(s)
+
+    VLMPolicy:
+      - Orchestrates the full act/evaluate cycle
+      - process_obs(): runs image_processor to get pixel_values tensor
+      - act(): generates text, parses action, returns value + log probs
+      - get_value(): forward pass for V(s) only
+      - evaluate_actions(): re-evaluates stored output_ids for PPO updates
+
+  a2c_ppo_acktr/rl_utils.py - Two key functions:
+
+    get_prompt(env_name, action_only, infos):
+      - Returns the task-specific CoT prompt string for each environment
+      - If action_only=True, strips out the CoT reasoning fields
+      - For EZPoints/Points24: dynamically includes the current formula
+        from the environment's info dict
+
+    text_projection(text_actions, env_name):
+      - Parses VLM text output to extract the action
+      - Finds '"action":' in the string
+      - Matches against the legal action list
+      - If exactly one legal action is found -> return its index
+      - Otherwise -> random action index (exploration fallback)
+
+  a2c_ppo_acktr/algo/ppo.py - PPO algorithm:
+    - Standard clipped PPO objective with clipped value loss
+    - Ratio clipping safety: if any ratio > 10, uses only surr2
+      (inspired by HuggingFace TRL's implementation)
+    - Uses accelerator.accumulate() for gradient accumulation
+    - Uses accelerator.backward() for distributed backward pass
+    - Gradient clipping via accelerator.clip_grad_norm_()
+
+  a2c_ppo_acktr/storage.py - RolloutStorage:
+    - Stores trajectories: obs, output_ids, actions, log_probs, values,
+      rewards, masks
+    - compute_returns(): GAE or standard discounted returns
+    - feed_forward_generator(): yields mini-batches for PPO updates
+
+  a2c_ppo_acktr/envs.py - Environment wrappers:
+    - make_vec_envs(): creates vectorized environments using
+      stable_baselines3's DummyVecEnv or SubprocVecEnv
+    - VecPyTorch: wraps environments to return PyTorch tensors
+    - Supports Atari wrappers (for potential future use)
+
+4.4 VLM_PPO_ALF/ (RL Training - ALFWorld)
+------------------------------------------
+Separate codebase for ALFWorld due to package dependency conflicts.
+Key differences from VLM_PPO:
+  - main_alf.py: handles ALFWorld's state-dependent admissible actions
+  - alf_utils.py: ALFWorld-specific utilities (load_config_file,
+    get_obs_image, process_action, compute_reward, AlfEnv wrapper)
+  - alf-config.yaml: ALFWorld configuration
+  - Separate conda environment (alf_conda.yml) required
+  - Recommended: single GPU only (variable sampling time causes NCCL
+    timeouts with multi-GPU)
+
+4.5 finetune.sh (Root-Level SFT Script)
+----------------------------------------
+Template for the supervised fine-tuning phase. Adapted from LLaVA's official
+finetune.sh for the v1.6-mistral model. Uses DeepSpeed ZeRO-3, trains for
+1 epoch with learning rate 2e-5 and cosine schedule.
+
+================================================================================
+5. THE TWO-PHASE TRAINING PIPELINE (HOW TO ACTUALLY USE THIS)
+================================================================================
+
+PHASE 1: SUPERVISED FINE-TUNING (SFT)
+--------------------------------------
+  1. Download SFT data from: https://huggingface.co/LEVI-Project/sft-data
+  2. Set paths in finetune.sh:
+     --data_path  /path_to_json_file
+     --image_folder  /path_to_image_file
+     --output_dir  /path_to_your_saved_model
+  3. Run: bash finetune.sh
+  4. This produces an SFT checkpoint that serves as initialization for RL.
+
+  Alternatively, skip SFT and use the base llava-v1.6-mistral-7b model
+  directly (for experimentation, not for reproducing paper results).
+
+PHASE 2: RL TRAINING
+---------------------
+  For GymCards:
+    1. conda create -n vrenv python=3.10.0 && conda activate vrenv
+    2. pip install -e LLaVA && pip install -e gym-cards
+    3. pip install gymnasium[atari,accept-rom-license]
+    4. pip install stable-baselines3 wandb deepspeed sentencepiece \
+       git+https://github.com/openai/CLIP.git
+    5. pip install xformers  (must be last)
+    6. Edit run scripts in VLM_PPO/scripts/ to set:
+       - --model-path to your SFT checkpoint
+       - CUDA_VISIBLE_DEVICES to your available GPUs
+       - num_processes in config_zero2.yaml <= number of GPUs
+    7. cd VLM_PPO/scripts && bash run_nl.sh  (or run_ezp.sh, etc.)
+
+  For ALFWorld:
+    1. conda env create -f VLM_PPO_ALF/alf_conda.yml
+    2. conda activate vrenv-alf
+    3. pip install -e LLaVA && pip install -e gym-cards
+    4. pip install git+https://github.com/openai/CLIP.git
+    5. Fix version pins: numpy==1.23.5, protobuf==3.20.3, pydantic==1.10.14
+    6. export ALFWORLD_DATA=<storage_path> && alfworld-download
+    7. cd VLM_PPO_ALF/scripts && bash run_alf.sh
+
+================================================================================
+6. KEY HYPERPARAMETERS AND THEIR MEANINGS
+================================================================================
+
+--init-lr / --end-lr / --lr_max_steps
+  Cosine annealing learning rate schedule. LR decays from init-lr to end-lr
+  over lr_max_steps PPO updates. Default: 1e-5 -> 1e-9 over 25 steps.
+
+--num-env-steps
+  Total environment steps for the entire training run (e.g., 15000).
+
+--num-steps
+  Environment steps collected per on-policy iteration before each PPO update
+  (e.g., 512 for NumberLine/Blackjack, 1024 for EZPoints/Points24).
+
+--grad-accum-steps
+  Gradient accumulation steps. Effective batch = mini_batch * grad_accum.
+  (e.g., 128 per GPU, 512 total with 4 GPUs)
+
+--max-new-tokens
+  Maximum number of tokens the VLM can generate per step (e.g., 256).
+  Must be large enough to contain full CoT + action.
+
+--thought-prob-coef (lambda)
+  Scaling factor for CoT token log-probabilities in the policy gradient.
+  Paper recommends 0.2-0.5. Set to 0.5 for gym_cards, 0.2 for ALFWorld.
+
+--temperature
+  Sampling temperature for VLM text generation (default: 0.2).
+
+--ppo-epoch
+  Number of PPO optimization epochs per on-policy batch (default: 4).
+
+--clip-param
+  PPO clipping parameter epsilon (default: 0.1).
+
+--use-gae / --gae-lambda / --gamma
+  GAE parameters: lambda=0.95, gamma=0.9 (discount factor).
+
+--use-lora / --train-vision
+  Use LoRA adapters; train-vision="all" trains vision encoder too.
+
+--eval-num-per-episode
+  Number of evaluation episodes per checkpoint (200 for deterministic tasks,
+  1000 for stochastic Blackjack).
+
+--action_only_prompt
+  If set, removes CoT reasoning from the prompt (for ablation studies).
+
+================================================================================
+7. KEY DESIGN DECISIONS AND INSIGHTS
+================================================================================
+
+1. CoT IS CRITICAL: Removing CoT causes -62.5% on NumberLine, -20.1% on
+   EZPoints. The VLM needs intermediate reasoning to make good decisions.
+
+2. LAMBDA SCALING: The CoT log-prob dominates the action log-prob by 10-100x.
+   Without lambda scaling, the policy gradient signal is drowned in CoT noise.
+
+3. RANDOM EXPLORATION FALLBACK: When the VLM fails to produce a parseable
+   action, a random action is taken. This prevents training from stalling
+   when the model generates garbage early in training.
+
+4. LORA OVER FULL FINE-TUNING: Due to compute constraints, all experiments
+   use LoRA (r=128, alpha=256) rather than full parameter updates. All three
+   model components (vision encoder, LLM, MLP projector) are trained.
+
+5. SEPARATE ENVS FOR ALFWORLD: ALFWorld has conflicting package dependencies
+   with the main gym_cards setup, requiring a separate conda environment.
+
+6. SINGLE GPU FOR ALFWORLD: Variable on-policy sampling time across GPUs
+   causes NCCL synchronization timeouts, so single-GPU is recommended.
+
+7. HARD-CODED TOKEN IDS: The token sequence [29908, 2467, 1115] for
+   '"action":' is hard-coded for the Mistral tokenizer. Users of different
+   tokenizer versions MUST manually verify and update these IDs. This is a
+   known fragility acknowledged by the authors.
+
+8. VALUE HEAD: A 3-layer MLP (4096->1024->512->1) rather than a single
+   linear layer, attached to the last hidden state before output tokens.
+   This is inspired by HuggingFace TRL and Castricato et al.
+
+================================================================================
+8. HARDWARE REQUIREMENTS
+================================================================================
+
+- All experiments conducted on an 8xA100 (80GB) DGX machine.
+- Maximum VRAM requirement: <40GB per GPU.
+- Each training curve takes at most 36 hours.
+- Minimum practical setup: 1-2 GPUs with >= 40GB VRAM each.
+- 4-bit or 8-bit quantization is supported for reduced memory usage.
+
+================================================================================
+9. RELATIONSHIP BETWEEN PAPER SECTIONS AND CODE
+================================================================================
+
+Paper Section              | Code Location
+---------------------------|--------------------------------------------------
+Fig 1 (Method overview)    | VLM_PPO/main.py (training loop)
+Sec 4.1 (Prompt design)    | VLM_PPO/a2c_ppo_acktr/rl_utils.py::get_prompt()
+Sec 4.2 (Post-processing)  | VLM_PPO/a2c_ppo_acktr/rl_utils.py::text_projection()
+Sec 4.3 (Action prob est.) | VLM_PPO/a2c_ppo_acktr/llava_interface/interface.py::llava_evaluate()
+Eq 4.3 (Lambda scaling)    | interface.py line: sum_log_prob = thought_prob_coef*thought_log_prob + action_tokens_log_prob
+Sec 4.4 (Algorithm 1)      | VLM_PPO/main.py (on-policy collection + PPO update)
+Sec 5.1 (Gym Cards)        | gym-cards/gym_cards/envs/
+Sec 5.2 (ALFWorld)         | VLM_PPO_ALF/alf_utils.py + main_alf.py
+Table 2 (Main results)     | Output of training scripts in VLM_PPO/scripts/
+Table 3 (CoT ablation)     | --action_only_prompt flag
+Fig 7 (Lambda ablation)    | --thought-prob-coef argument
+Appendix C.1 (SFT)         | finetune.sh
+Appendix C.1 (RL training) | VLM_PPO/scripts/*.sh
+
+================================================================================
+10. KNOWN ISSUES AND CAVEATS
+================================================================================
+
+1. TOKENIZER FRAGILITY: The hard-coded token IDs [29908, 2467, 1115] for
+   '"action":' in interface.py line ~66 may not match newer tokenizer
+   versions. Always verify manually.
+
+2. ARCHIVED REPO: As of Dec 15, 2024, the repo is archived. Package
+   dependencies may be outdated and require manual resolution.
+
+3. PACKAGE ORDER: When installing VLM_PPO dependencies, LLaVA must be
+   installed first and xformers last. Order matters.
+
+4. FONT FILES: If gym_cards renders incorrectly (missing fonts), download
+   them from the dejavu.zip file included in the repo.
+
+5. POINTS24 REMAINS UNSOLVED: No method achieves meaningful performance on
+   Points24 (~2.3%) due to compound perception and reasoning difficulty.
+
+6. SFT DATA DISTRIBUTION MISMATCH: For Points24, SFT data always has a
+   viable solution, while the actual environment may not. This creates a
+   distribution mismatch between SFT and RL.
+
+7. ALFWORLD SINGLE-GPU: Multi-GPU training for ALFWorld causes NCCL timeouts
+   due to variable episode lengths across processes.
+
+================================================================================
+11. CITATION
+================================================================================
+
+@inproceedings{
+  zhai2024finetuning,
+  title={Fine-Tuning Large Vision-Language Models as Decision-Making Agents
+         via Reinforcement Learning},
+  author={Yuexiang Zhai and Hao Bai and Zipeng Lin and Jiayi Pan and
+          Shengbang Tong and Yifei Zhou and Alane Suhr and Saining Xie and
+          Yann LeCun and Yi Ma and Sergey Levine},
+  booktitle={The Thirty-eighth Annual Conference on Neural Information
+             Processing Systems},
+  year={2024},
+  url={https://openreview.net/forum?id=nBjmMF2IZU}
+}
+
+================================================================================
+END OF DOCUMENT
+================================================================================
