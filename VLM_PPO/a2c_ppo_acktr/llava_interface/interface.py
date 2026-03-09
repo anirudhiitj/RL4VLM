@@ -1,5 +1,6 @@
 import torch
 import math
+import os
 def split_list(lst, n):
     """Split a list into n (roughly) equal-sized chunks"""
     chunk_size = math.ceil(len(lst) / n)  # integer division
@@ -63,9 +64,10 @@ def llava_evaluate(value_model, input_ids, output_ids, image_tensor, temperature
     output_ids_mask = (output_ids != 0)[:, 1:]
     selected_log_probs = output_ids_mask*torch.take_along_dim(log_probs[:, input_token_len:-1], output_ids[:,1:].unsqueeze(2), dim = 2).squeeze(2)
     unfolded = output_ids.unfold(dimension=-1, size=3, step=1)
-    target = torch.tensor([29908,2467,1115]).to(base.device)
-    # tokens for text string:'"action":' (torch.tensor([[29908,2467,1115]]))
-    matches = (unfolded == target).all(dim = -1)
+    # tokens for '"action":' — ID 345 is " after space/start, ID 28739 is " after newline
+    target1 = torch.tensor([345,1774,1264]).to(base.device)
+    target2 = torch.tensor([28739,1774,1264]).to(base.device)
+    matches = (unfolded == target1).all(dim=-1) | (unfolded == target2).all(dim=-1)
     match_index = matches.nonzero(as_tuple=True)[-1]
     if match_index.shape[0] >= 1:
         match_index = match_index[-1].unsqueeze(0)
@@ -79,5 +81,46 @@ def llava_evaluate(value_model, input_ids, output_ids, image_tensor, temperature
     ## omitting the second token for calculating log prob, because its logprb is very very small
     thought_log_prob = torch.sum(selected_log_probs[:,1:match_index-1], dim = 1)
     action_tokens_log_prob = torch.sum(selected_log_probs[:,match_index-1:], dim = 1)
+    # DEBUG: write critical info to file (first 5 calls only)
+    _debug_file = "/tmp/rl_token_debug.txt"
+    try:
+        _existing = 0
+        if os.path.exists(_debug_file):
+            with open(_debug_file, "r") as _df:
+                _existing = _df.read().count("=== call")
+        if _existing < 5:
+            nonzero_ids = output_ids[0][output_ids[0] != 0].tolist()
+            raw_log_probs = torch.take_along_dim(log_probs[:, input_token_len:-1], output_ids[:,1:].unsqueeze(2), dim = 2).squeeze(2)
+            with open(_debug_file, "a") as _df:
+                _df.write("=== call {} ===\n".format(_existing + 1))
+                _df.write("output_ids non-zero ({}): {}\n".format(len(nonzero_ids), nonzero_ids))
+                _df.write("input_token_len: {}\n".format(input_token_len))
+                _df.write("inputs_embeds.shape: {}\n".format(list(inputs_embeds.shape)))
+                _df.write("log_probs.shape: {}\n".format(list(log_probs.shape)))
+                _df.write("output_ids.shape: {}\n".format(list(output_ids.shape)))
+                _df.write("selected_log_probs.shape: {}\n".format(list(selected_log_probs.shape)))
+                _df.write("match found: {} | match_index: {}\n".format(matches.any().item(), match_index.tolist()))
+                mi = match_index.item()
+                _df.write("output_ids_mask around match [{}-{}]: {}\n".format(
+                    max(0,mi-2), min(output_ids_mask.shape[1], mi+8),
+                    output_ids_mask[0, max(0,mi-2):mi+8].tolist()))
+                _df.write("raw_log_probs (before mask) [{}-{}]: {}\n".format(
+                    max(0,mi-2), min(raw_log_probs.shape[1], mi+8),
+                    raw_log_probs[0, max(0,mi-2):mi+8].tolist()))
+                _df.write("selected_log_probs [{}-{}]: {}\n".format(
+                    max(0,mi-2), min(selected_log_probs.shape[1], mi+8),
+                    selected_log_probs[0, max(0,mi-2):mi+8].tolist()))
+                _df.write("output_ids around match [{}-{}]: {}\n".format(
+                    max(0,mi-1), min(output_ids.shape[1], mi+9),
+                    output_ids[0, max(0,mi-1):mi+9].tolist()))
+                _df.write("thought_log_prob: {}\n".format(thought_log_prob))
+                _df.write("action_tokens_log_prob: {}\n".format(action_tokens_log_prob))
+                _df.write("slice used: selected_log_probs[:, {}:]\n".format(mi-1))
+                _df.write("sum of selected_log_probs[:, 1:{}]: {}\n".format(mi-1, torch.sum(selected_log_probs[:,1:mi-1], dim=1)))
+                _df.write("sum of selected_log_probs[:, {}:]: {}\n".format(mi-1, torch.sum(selected_log_probs[:,mi-1:], dim=1)))
+                _df.write("\n")
+    except Exception as e:
+        with open(_debug_file, "a") as _df:
+            _df.write("DEBUG ERROR: {}\n".format(e))
     sum_log_prob = thought_prob_coef*thought_log_prob + action_tokens_log_prob
     return values, sum_log_prob, action_tokens_log_prob

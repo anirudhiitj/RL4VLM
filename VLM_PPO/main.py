@@ -1,10 +1,22 @@
+import warnings
+warnings.filterwarnings("ignore")
+import os
+os.environ["TRANSFORMERS_NO_ADVISORY_WARNINGS"] = "1"
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
+import logging
+logging.getLogger("transformers").setLevel(logging.ERROR)
+logging.getLogger("accelerate").setLevel(logging.ERROR)
+logging.getLogger("torch").setLevel(logging.ERROR)
+logging.getLogger("deepspeed").setLevel(logging.ERROR)
+
 from patch import replace_llama_attn_with_xformers_attn
 replace_llama_attn_with_xformers_attn()
 print("using xformers")
 
 import copy
+import csv
 import glob
-import os
 import time
 from collections import deque
 
@@ -45,9 +57,6 @@ from tqdm import tqdm
 
 import accelerate
 from accelerate.state import AcceleratorState
-
-import warnings
-warnings.filterwarnings("ignore")
 
 def main():
     args = get_args()
@@ -188,12 +197,34 @@ def main():
     print("action_log_prob:{}".format(action_log_prob))
     print("action_tokens_log_prob:{}".format(action_tokens_log_prob))
 
+    # SANITY CHECK: abort immediately if action_tokens_log_prob is zero (the bug we fixed)
+    if action_tokens_log_prob.abs().max().item() < 1e-6:
+        print("\n" + "="*60)
+        print("FATAL: action_tokens_log_prob is ZERO on first step!")
+        print("Check /tmp/rl_token_debug.txt for debug info.")
+        print("="*60)
+        exit(1)
+    else:
+        print("\n>>> SANITY CHECK PASSED: action_tokens_log_prob = {} (non-zero, good!)".format(action_tokens_log_prob))
+
+    # Setup CSV results file
+    results_csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'rl_numberline_results.csv')
+    with open(results_csv_path, 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(['iteration', 'timesteps', 'fps', 'elapsed_min',
+                         'mean_reward', 'median_reward', 'min_reward', 'max_reward',
+                         'success_rate', 'mean_action_log_prob',
+                         'value_loss', 'action_loss', 'dist_entropy'])
+    print(">>> Results will be saved to: {}".format(results_csv_path))
+
     rollouts.obs[0].copy_(obs)
     rollouts.to(device)
 
     episode_rewards = deque(maxlen=args.eval_num_per_episode)
     episode_success_rate = deque(maxlen=args.eval_num_per_episode)
     episode_action_tokens_log_prob = deque(maxlen=args.eval_num_per_episode)
+
+    zero_logprob_count = 0  # track consecutive zero-logprob iterations
 
     start = time.time()
     num_updates = int(
@@ -253,6 +284,20 @@ def main():
         print("ground truth:{}".format(infos))
         print("action log prob:{}".format(action_log_prob))
         print("action tokens log prob:{}".format(action_tokens_log_prob))
+
+        # ERROR CHECK: detect if action_tokens_log_prob is still zero
+        if action_tokens_log_prob.abs().max().item() < 1e-6:
+            zero_logprob_count += 1
+            print("\n>>> WARNING: action_tokens_log_prob is ZERO at iteration {} ({} consecutive)".format(j, zero_logprob_count))
+            if zero_logprob_count >= 3:
+                print("\n" + "="*60)
+                print("FATAL: action_tokens_log_prob has been ZERO for 3 consecutive iterations.")
+                print("PPO has no gradient signal. Something is still broken. ABORTING.")
+                print("="*60)
+                exit(1)
+        else:
+            zero_logprob_count = 0
+
         with torch.no_grad():
             next_value = actor_critic.get_value(
                 rollouts.obs[-1]).detach()
@@ -266,15 +311,31 @@ def main():
         if len(episode_rewards) > 1:
             total_num_steps = (j + 1) * args.num_processes * args.num_steps
             end = time.time()
+            elapsed_min = (end - start) / 60.0
 
             print(
-                "Updates {}, num timesteps {}, FPS {} \n Last {} training episodes: mean/median reward {:.2f}/{:.2f}, min/max reward {:.2f}/{:.2f}, success_rate {:.2f}\n"
+                "Updates {}, num timesteps {}, FPS {}, elapsed {:.1f} min\n Last {} training episodes: mean/median reward {:.2f}/{:.2f}, min/max reward {:.2f}/{:.2f}, success_rate {:.2f}\n value_loss {:.4f}, action_loss {:.4f}, dist_entropy {:.4f}\n"
                 .format(j, total_num_steps,
                         int(total_num_steps / (end - start)),
+                        elapsed_min,
                         len(episode_rewards), np.mean(episode_rewards),
                         np.median(episode_rewards), np.min(episode_rewards),
                         np.max(episode_rewards), np.mean(episode_success_rate),
-                        dist_entropy, value_loss, action_loss))
+                        value_loss, action_loss, dist_entropy))
+
+            # Save to CSV
+            with open(results_csv_path, 'a', newline='') as f:
+                writer = csv.writer(f)
+                writer.writerow([j, total_num_steps, int(total_num_steps / (end - start)),
+                                 round(elapsed_min, 1),
+                                 round(np.mean(episode_rewards), 4),
+                                 round(np.median(episode_rewards), 4),
+                                 round(np.min(episode_rewards), 4),
+                                 round(np.max(episode_rewards), 4),
+                                 round(np.mean(episode_success_rate), 4),
+                                 round(np.mean(episode_action_tokens_log_prob), 4),
+                                 round(value_loss, 6), round(action_loss, 6),
+                                 round(dist_entropy, 6)])
             if args.use_wandb:
                 wandb.log({"iteration": j,
                         "num_timesteps": total_num_steps,
