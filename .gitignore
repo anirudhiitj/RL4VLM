@@ -1,0 +1,16 @@
+# Hugging Face cache and local data
+.cache/huggingface/
+**/.cache/huggingface/
+.huggingface/
+**/.huggingface/
+hf_home/
+
+# Local datasets
+data/
+data/sft-data/
+
+# Training artifacts
+checkpoints/
+
+# Archives
+*.zip
