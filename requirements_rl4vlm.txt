@@ -1,0 +1,33 @@
+# Core dependencies for RL4VLM (rl4vlm conda env, Python 3.10, CUDA 12.1)
+# Install: pip install -r requirements_rl4vlm.txt
+# Note: torch, xformers, flash-attn must be installed separately first:
+#   pip install torch==2.1.2 --index-url https://download.pytorch.org/whl/cu121
+#   pip install xformers==0.0.23.post1 --index-url https://download.pytorch.org/whl/cu121
+#   pip install flash-attn==2.5.2 --no-build-isolation
+
+accelerate==0.27.2
+deepspeed==0.18.3
+transformers==4.37.2
+peft==0.4.0
+tokenizers>=0.15
+safetensors
+bitsandbytes
+scipy
+tqdm
+numpy==1.26.4
+packaging
+psutil
+matplotlib
+stable-baselines3
+gymnasium
+Pillow
+einops
+gradio==4.16.0
+shortuuid
+httpx
+uvicorn
+fastapi
+markdown2
+pydantic
+scikit-learn
+sentencepiece

@@ -1,0 +1,187 @@
+================================================================================
+             NUMBERLINE REPRODUCTION GUIDE — RL4VLM (arXiv:2405.10292)
+================================================================================
+Target: Reproduce NumberLine results from Table 2 of the paper.
+Paper target: 89.4% success rate after SFT + RL (PPO with CoT).
+Hardware: Single NVIDIA H200 GPU (GPU 7), ~144GB VRAM.
+Conda env: rl4vlm (Python 3.10, PyTorch 2.1.2+cu121)
+
+================================================================================
+STEP 0: ENVIRONMENT SETUP
+================================================================================
+
+  conda activate rl4vlm
+  cd /mnt/raid/rl_gaming/RL4VLM
+
+  # Verify packages:
+  python -c "import torch, transformers, llava, gym_cards, accelerate, deepspeed, peft, xformers; print('All OK')"
+
+================================================================================
+STEP 1: DOWNLOAD SFT DATA FROM HUGGINGFACE
+================================================================================
+
+  mkdir -p data/sft-data && cd data/sft-data
+
+  # NumberLine JSON (20k samples, 21MB)
+  wget "https://huggingface.co/LEVI-Project/sft-data/resolve/main/numberline.json"
+
+  # NumberLine images (20k images, 105MB zip)
+  wget "https://huggingface.co/LEVI-Project/sft-data/resolve/main/numberline.zip"
+  unzip numberline.zip
+
+  # Result: data/sft-data/numberline.json
+  #         data/sft-data/numberline_images_test_v2/  (20,000 .jpeg files)
+
+  # Data format (LLaVA conversation format):
+  # [{"id": "0", "image": "0.jpeg", "conversations": [
+  #    {"from": "human", "value": "You are playing a game..."},
+  #    {"from": "gpt", "value": "{\"current number\": ...}"}]}]
+
+================================================================================
+STEP 2: FIX TOKENIZER IDS (CRITICAL)
+================================================================================
+
+  The file VLM_PPO/a2c_ppo_acktr/llava_interface/interface.py has hard-coded
+  token IDs for '"action":' used to separate CoT from action log-probs.
+
+  Original (WRONG for tokenizers>=0.14):  [29908, 2467, 1115]
+  Updated (CORRECT):                      [345, 1774, 1264]
+
+  This was already fixed in:
+    VLM_PPO/a2c_ppo_acktr/llava_interface/interface.py line ~66
+
+  To verify yourself:
+    python -c "from transformers import AutoTokenizer; t=AutoTokenizer.from_pretrained('liuhaotian/llava-v1.6-mistral-7b'); print(t.encode('\"action\":', add_special_tokens=False))"
+
+================================================================================
+STEP 3: PHASE 1 — SUPERVISED FINE-TUNING (SFT)
+================================================================================
+
+  Paper spec (Appendix C.1):
+    - Base model: liuhaotian/llava-v1.6-mistral-7b
+    - 1 epoch on 20k NumberLine instruction-following samples
+    - Learning rate: 2e-5, cosine schedule, warmup ratio 0.03
+    - Full fine-tuning (not LoRA) for SFT phase
+    - DeepSpeed ZeRO-3
+    - batch size 16 per GPU, bf16 precision
+
+  Run command:
+    conda activate rl4vlm
+    cd /mnt/raid/rl_gaming/RL4VLM
+    bash scripts/sft_numberline_gpu7.sh
+
+  What this does:
+    - CUDA_VISIBLE_DEVICES=7 (GPU 7 only)
+    - Runs deepspeed with LLaVA train_mem.py (flash_attention_2)
+    - Trains for 1 epoch on NumberLine SFT data
+    - Saves checkpoint to: checkpoints/sft_numberline/
+
+  Duration estimate: ~20-40 min on H200 for 20k samples, 1 epoch.
+
+================================================================================
+STEP 4: PHASE 2 — RL TRAINING (PPO)
+================================================================================
+
+  Paper spec (Table 5, Appendix C.1):
+    - Start from SFT checkpoint (Phase 1 output)
+    - LoRA: r=128, alpha=256, dropout=0.05 on ALL linear layers
+    - Train: vision encoder + LLM + MLP projector (all via LoRA)
+    - Value head: 3-layer MLP (4096→1024→512→1)
+    - PPO hyperparameters:
+        init-lr = 1e-5, end-lr = 1e-9 (cosine annealing over 25 steps)
+        gamma = 0.9, gae-lambda = 0.95
+        clip-param = 0.1 (epsilon)
+        ppo-epoch = 4
+        mini-batch-size = 1
+        grad-accum-steps = 128
+        num-steps = 512 (per iteration)
+        num-env-steps = 15000 (total)
+        temperature = 0.2
+        max-new-tokens = 256
+        thought-prob-coef = 0.5 (lambda for CoT scaling)
+    - Evaluation: 200 episodes (deterministic task)
+
+  Run command:
+    conda activate rl4vlm
+    cd /mnt/raid/rl_gaming/RL4VLM
+    bash scripts/rl_numberline_gpu7.sh
+
+  What this does:
+    - CUDA_VISIBLE_DEVICES=7 (GPU 7 only)
+    - Uses accelerate + DeepSpeed ZeRO-2 (single process)
+    - Loads SFT checkpoint from checkpoints/sft_numberline/
+    - Applies LoRA, creates value head
+    - Runs on-policy PPO loop:
+      * Each iteration: collect 512 env steps
+      * Total: 15000 / 512 / 1 = ~29 updates
+      * Each update: 4 PPO epochs with gradient accumulation
+    - Prints success rate every iteration
+
+  Duration: Main training ~12-36 hours depending on generation speed.
+
+================================================================================
+STEP 5: EXPECTED RESULTS
+================================================================================
+
+  From Table 2 of the paper:
+
+    Method          | NumberLine Success Rate
+    ----------------|-----------------------
+    CNN+RL          | 87.1%
+    GPT-4V          | 65.5%
+    Gemini          | 50.5%
+    LLaVA (base)    | ~10-20% (before SFT)
+    LLaVA-sft       | ~26.9% (without CoT) / better with CoT
+    RL4VLM (ours)   | 89.4%
+
+  After Phase 1 (SFT only):
+    - The model should be able to parse the game and output structured JSON
+    - Success rate should be moderate (paper doesn't report exact SFT-only for NL)
+
+  After Phase 2 (SFT + RL):
+    - Target: ~89.4% success rate on NumberLine
+    - This is the best result in the paper for this task
+
+  Key insights from ablations (Table 3):
+    - With CoT:    89.4%
+    - Without CoT: 26.9%  (CoT is critical, +62.5%)
+
+================================================================================
+STEP 6: MONITORING AND DEBUGGING
+================================================================================
+
+  During SFT:
+    - Watch loss decrease in terminal output
+    - Final SFT model saved to checkpoints/sft_numberline/
+
+  During RL:
+    - Watch for:
+      * "action:" printed each iteration (should be "+" or "-")
+      * episode_success_rate should increase over iterations
+      * action_tokens_log_prob should become less negative over time
+    - If model outputs garbage early on, that's normal (random exploration fallback)
+    - If success rate plateaus at 0%, check tokenizer IDs (Step 2)
+
+  Optional: Add --use-wandb --wandb-project rl4vlm --wandb-run numberline
+  to the RL script for full logging.
+
+================================================================================
+FILES CREATED/MODIFIED
+================================================================================
+
+  Created:
+    data/sft-data/numberline.json           (SFT training data)
+    data/sft-data/numberline_images_test_v2/ (SFT images)
+    LLaVA/scripts/zero3.json                (DeepSpeed ZeRO-3 config for SFT)
+    scripts/sft_numberline_gpu7.sh          (SFT run script, GPU 7)
+    scripts/rl_numberline_gpu7.sh           (RL run script, GPU 7)
+    scripts/config_zero2_single.yaml        (Accelerate config, 1 GPU)
+    numberline.txt                          (This file)
+
+  Modified:
+    VLM_PPO/a2c_ppo_acktr/llava_interface/interface.py
+      - Fixed token IDs: [29908,2467,1115] → [345,1774,1264]
+
+================================================================================
+END
+================================================================================
