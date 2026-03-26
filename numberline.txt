@@ -1,0 +1,1360 @@
+================================================================================
+             NUMBERLINE GAME - COMPLETE GUIDE (RL4VLM PROJECT)
+       Fine-Tuning Large Vision-Language Models as Decision-Making
+                 Agents via Reinforcement Learning
+================================================================================
+
+Paper:    https://arxiv.org/abs/2405.10292
+Data:     https://huggingface.co/LEVI-Project/sft-data
+Model:    https://huggingface.co/liuhaotian/llava-v1.6-mistral-7b
+Venue:    NeurIPS 2024
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+  1.  WHAT IS THE NUMBERLINE GAME?
+  2.  HOW THE ENVIRONMENT WORKS (CODE-LEVEL)
+  3.  THE FULL TRAINING PIPELINE OVERVIEW
+  4.  PHASE 1: SUPERVISED FINE-TUNING (SFT)
+      4A. Where is the SFT Data? (Hugging Face)
+      4B. SFT Data Format
+      4C. How to Run SFT
+      4D. What the SFT Script Does Internally
+      4E. SFT Output / Checkpoint
+  5.  CALCULATING ACCURACY AFTER SFT
+  6.  PHASE 2: RL TRAINING (PPO)
+      6A. How RL Uses the SFT Checkpoint
+      6B. The RL Training Loop Step-by-Step
+      6C. The Prompt (What the VLM Sees)
+      6D. How Text Output is Parsed to Actions
+      6E. Reward Function
+      6F. The PPO Algorithm Details
+      6G. The Lambda (thought-prob-coef) Trick
+      6H. LoRA Configuration
+      6I. Value Head Architecture
+      6J. How to Run RL Training
+  7.  ALL FILES INVOLVED AND WHAT THEY DO
+  8.  DEPENDENCIES AND INSTALLATION (STEP-BY-STEP)
+  9.  HARDWARE REQUIREMENTS
+  10. RESULTS AND EXPECTED PERFORMANCE
+  11. COMMON ISSUES AND TROUBLESHOOTING
+  12. FULL COMMAND REFERENCE
+
+================================================================================
+1. WHAT IS THE NUMBERLINE GAME?
+================================================================================
+
+NumberLine is the SIMPLEST of the four gym_cards environments in the RL4VLM
+project. It serves as the basic test case / debugging environment for the
+entire VLM + RL pipeline.
+
+THE GAME:
+  - You have a number line from 0 to max_position (default = 5, so 0-5)
+  - At the start of each episode, a RANDOM "Current" number and a RANDOM
+    "Target" number are placed on the line (they are always different)
+  - The agent sees an IMAGE (300x300 RGB) showing:
+      "Target: X"
+      "Current: Y"
+    (white background, black text, DejaVuSans-Bold font, size 36)
+  - The agent must choose ONE of TWO actions each step:
+      Action 0: "-" (subtract 1 from current position)
+      Action 1: "+" (add 1 to current position)
+  - Goal: Move "Current" to match "Target"
+  - The episode ends when Current == Target (success) or after 2*max_position
+    steps (truncation/failure)
+
+WHY THIS TASK MATTERS:
+  - Tests VISUAL recognition (can the VLM read numbers from an image?)
+  - Tests ARITHMETIC reasoning (should I go up or down?)
+  - Tests MULTI-STEP decision making (needs multiple correct actions in a row)
+  - Deterministic (no randomness in transitions), so performance directly
+    measures the agent's reasoning quality
+  - Simple 2-action space, so it isolates vision+reasoning from complex
+    action selection
+
+PAPER RESULTS FOR NUMBERLINE:
+  - GPT-4V:     65.5% success rate
+  - Gemini:     51.7% success rate
+  - CNN+RL:     87.1% success rate
+  - LLaVA-SFT:  50.2% success rate (SFT alone, no RL)
+  - RL4VLM:     89.4% success rate (SFT + RL, BEST result)
+  
+  CoT ablation:
+  - With CoT:    89.4%
+  - Without CoT: 26.9%
+  - Difference:  +62.5% (CoT is CRITICAL for NumberLine)
+
+================================================================================
+2. HOW THE ENVIRONMENT WORKS (CODE-LEVEL)
+================================================================================
+
+FILE: gym-cards/gym_cards/envs/numberline.py
+
+CLASS: NumberLineEnv(gym.Env)
+
+INITIALIZATION (__init__):
+  - max_position = 5 (number line goes from 0 to 5)
+  - action_space = Discrete(2)  -> {0: move left/"-", 1: move right/"+"}
+  - observation_space = Box(0, 255, shape=(300,300,3), dtype=uint8)
+  - Randomly picks start_position and goal_position from [0, max_position]
+  - If start == goal, shifts goal by 1 (mod max_position)
+  - position = start_position
+  - steps_made = 0
+
+RESET (reset):
+  - Re-randomizes start_position and goal_position
+  - Ensures they are different
+  - Resets position = start_position, steps_made = 0
+  - Returns: (observation_image, info_dict)
+  - info = {"Target": goal_position, "Current": position}
+
+STEP (step):
+  - Increments steps_made
+  - Calculates prev_distance = |position - goal|
+  - If action==0 and position > 0: position -= 1
+  - If action==1 and position < max_position: position += 1
+  - Calculates current_distance = |position - goal|
+  - REWARD:
+      If current_distance == 0:     reward = +1, done = True (SUCCESS!)
+      If current_distance >= prev:   reward = -1 (moved wrong way or stayed)
+      Else:                          reward = 0 (moved closer but not there yet)
+  - TRUNCATION: If steps_made >= 2 * max_position and not done -> truncate
+  - Returns: (observation, reward, done, truncate, info)
+
+OBSERVATION (_get_observation):
+  - Creates a 300x300 white PIL Image
+  - Draws "Target: X" at position (30, 60) in black, font size 36
+  - Draws "Current: Y" at position (30, 180) in black, font size 36
+  - Uses font: 'dejavu/DejaVuSans-Bold.ttf'
+  - Converts to numpy array and returns
+
+EXAMPLE EPISODE (max_position=5):
+  Reset -> Target=4, Current=1, Image shows "Target: 4" and "Current: 1"
+  Step(1/"+") -> Current=2, reward=0, done=False  (moved closer)
+  Step(1/"+") -> Current=3, reward=0, done=False  (moved closer)
+  Step(1/"+") -> Current=4, reward=+1, done=True  (REACHED TARGET!)
+  Total reward = +1 (success)
+
+REGISTRATION (gym-cards/gym_cards/__init__.py):
+  register(
+      id='gym_cards/NumberLine-v0',
+      entry_point='gym_cards.envs:NumberLineEnv',
+      max_episode_steps=300,
+  )
+
+  So you use it as: env = gym.make('gym_cards/NumberLine-v0')
+
+================================================================================
+3. THE FULL TRAINING PIPELINE OVERVIEW
+================================================================================
+
+The complete pipeline for NumberLine has TWO phases:
+
+  ┌─────────────────────────────────────────────────────────┐
+  │  BASE MODEL: liuhaotian/llava-v1.6-mistral-7b          │
+  │  (Downloaded automatically from Hugging Face)           │
+  │  Components:                                            │
+  │    - CLIP ViT-L/14-336 vision encoder                   │
+  │    - MLP projector (vision -> language mapping)          │
+  │    - Mistral-7B LLM backbone                            │
+  └────────────────────────┬────────────────────────────────┘
+                           │
+                           ▼
+  ┌─────────────────────────────────────────────────────────┐
+  │  PHASE 1: SUPERVISED FINE-TUNING (SFT)                  │
+  │                                                         │
+  │  Input:  SFT data from HuggingFace (JSON + images)      │
+  │  Script: finetune.sh (in repo root)                     │
+  │  Uses:   DeepSpeed ZeRO-3, 4 GPUs                       │
+  │  Output: SFT checkpoint (full model weights)            │
+  │                                                         │
+  │  Training: 1 epoch, lr=2e-5, cosine schedule            │
+  │  Data: ~20k-50k instruction-following samples           │
+  │        for NumberLine task                               │
+  └────────────────────────┬────────────────────────────────┘
+                           │
+                           ▼
+  ┌─────────────────────────────────────────────────────────┐
+  │  (OPTIONAL) EVALUATE SFT ACCURACY                       │
+  │  Run the SFT model in the NumberLine environment        │
+  │  and measure success rate over N episodes               │
+  └────────────────────────┬────────────────────────────────┘
+                           │
+                           ▼
+  ┌─────────────────────────────────────────────────────────┐
+  │  PHASE 2: RL TRAINING (PPO)                             │
+  │                                                         │
+  │  Input:   SFT checkpoint + live environment interaction │
+  │  Script:  VLM_PPO/scripts/run_nl.sh                     │
+  │  Uses:    DeepSpeed ZeRO-2, accelerate, LoRA            │
+  │  Output:  RL-finetuned model (LoRA adapters)            │
+  │                                                         │
+  │  Training: 15000 env steps, lr=1e-5->1e-9 cosine       │
+  │  On-policy: 512 steps per PPO update                    │
+  │  PPO epochs: 4 per update                               │
+  │  Evaluation: 200 episodes per checkpoint                │
+  └─────────────────────────────────────────────────────────┘
+
+================================================================================
+4. PHASE 1: SUPERVISED FINE-TUNING (SFT)
+================================================================================
+
+4A. WHERE IS THE SFT DATA? (HUGGING FACE)
+------------------------------------------
+
+The SFT data is hosted at:
+  https://huggingface.co/LEVI-Project/sft-data/tree/main
+
+This Hugging Face repository contains:
+  - JSON files with instruction-following data for each task
+  - Image folders with the corresponding observation images
+
+For NumberLine specifically, the data contains:
+  - A JSON file with entries like:
+    {
+      "id": "unique_id",
+      "image": "path/to/image.png",
+      "conversations": [
+        {"from": "human", "value": "<image>\n<the prompt text>"},
+        {"from": "gpt", "value": "<the expected JSON response>"}
+      ]
+    }
+  - An image folder with all the 300x300 PNG observation images
+
+HOW TO DOWNLOAD THE SFT DATA:
+
+  Option 1 - Web browser:
+    Go to https://huggingface.co/LEVI-Project/sft-data/tree/main
+    Download the JSON files and image folders manually
+
+  Option 2 - Git LFS:
+    git lfs install
+    git clone https://huggingface.co/LEVI-Project/sft-data
+
+  Option 3 - Hugging Face CLI:
+    pip install huggingface-hub
+    huggingface-cli download LEVI-Project/sft-data --local-dir ./sft-data
+
+The data was generated by an EXPERT SOLVER (not by humans or GPT-4V):
+  - For each task, the solver plays the game optimally
+  - At each step, it records the observation image and constructs the
+    "correct" JSON response including CoT reasoning and action
+  - This produces 20k-50k samples per task for gym_cards
+  - Two versions exist: WITH CoT and WITHOUT CoT
+
+4B. SFT DATA FORMAT
+--------------------
+
+The SFT JSON file follows the LLaVA fine-tuning format. Each entry looks like:
+
+  {
+    "id": "numberline_00001",
+    "image": "numberline/episode_1_step_0.png",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\nYou are playing a game called number line. You will
+                  see a target number and a current number in the image. And your
+                  goal is to move the current number closer to the target by
+                  choosing either adding or subtracting one to the current number.
+                  Your response should be a valid json file in the following format:
+                  \n{\n \"current number\": \"x\", \n\"target number\": \"x\",
+                  \n\"thoughts\": \"{first read out the current and target number,
+                  then think carefully about which action to choose}\",
+                  \n\"action\": \"-\" or \"+\" \n}"
+      },
+      {
+        "from": "gpt",
+        "value": "{\n\"current number\": \"1\",\n\"target number\": \"4\",
+                  \n\"thoughts\": \"The current number is 1 and the target is 4.
+                  Since 4 > 1, I need to add to move closer.\",\n\"action\": \"+\"\n}"
+      }
+    ]
+  }
+
+KEY OBSERVATIONS ABOUT THE DATA:
+  - The "human" message contains the <image> token + the prompt text
+  - The "gpt" message is the expected model output (CoT + action in JSON)
+  - The image path is relative to the --image_folder argument
+  - The CoT version includes "current number", "target number", "thoughts"
+    fields BEFORE the "action" field
+  - The action-only version would just have the "action" field
+
+4C. HOW TO RUN SFT
+-------------------
+
+PREREQUISITES:
+  1. Download the SFT data from HuggingFace (Section 4A)
+  2. Have the LLaVA codebase installed (pip install -e LLaVA)
+  3. Have multiple GPUs (the script defaults to 4 GPUs: 0,1,2,3)
+
+SCRIPT: finetune.sh (in repository root)
+
+STEP-BY-STEP:
+  1. Edit finetune.sh to set your paths:
+
+     # Change this to your downloaded SFT JSON file path:
+     --data_path /path/to/your/numberline_sft_data.json
+
+     # Change this to your image folder:
+     --image_folder /path/to/your/sft_images/
+
+     # Change this to where you want to save the SFT checkpoint:
+     --output_dir /path/to/save/sft_checkpoint/
+
+  2. Make sure you are in the LLaVA directory:
+     cd RL4VLM/LLaVA
+
+  3. Run the script:
+     bash ../finetune.sh
+
+THE FULL finetune.sh COMMAND:
+  deepspeed --include localhost:0,1,2,3 \
+      llava/train/train_mem.py \
+      --deepspeed ./scripts/zero3.json \
+      --model_name_or_path liuhaotian/llava-v1.6-mistral-7b \
+      --version v1 \
+      --data_path /path_to_json_file \
+      --image_folder /path_to_image_file \
+      --vision_tower openai/clip-vit-large-patch14-336 \
+      --mm_projector_type mlp2x_gelu \
+      --mm_vision_select_layer -2 \
+      --mm_use_im_start_end False \
+      --mm_use_im_patch_token False \
+      --image_aspect_ratio pad \
+      --group_by_modality_length True \
+      --bf16 True \
+      --output_dir /path_to_your_saved_model \
+      --num_train_epochs 1 \
+      --per_device_train_batch_size 16 \
+      --per_device_eval_batch_size 4 \
+      --gradient_accumulation_steps 1 \
+      --evaluation_strategy "no" \
+      --save_strategy "steps" \
+      --save_steps 50000 \
+      --save_total_limit 1 \
+      --learning_rate 2e-5 \
+      --weight_decay 0. \
+      --warmup_ratio 0.03 \
+      --lr_scheduler_type "cosine" \
+      --logging_steps 1 \
+      --tf32 True \
+      --model_max_length 2048 \
+      --gradient_checkpointing True \
+      --dataloader_num_workers 4 \
+      --lazy_preprocess True
+
+4D. WHAT THE SFT SCRIPT DOES INTERNALLY
+----------------------------------------
+
+1. LOADS BASE MODEL:
+   - Downloads liuhaotian/llava-v1.6-mistral-7b from HuggingFace Hub
+   - This is a ~14GB model with:
+     * Mistral-7B LLM backbone
+     * CLIP ViT-L/14-336 vision encoder
+     * MLP projector (maps 1024-dim CLIP features to 4096-dim Mistral space)
+
+2. LOADS TRAINING DATA:
+   - Reads the JSON file
+   - For each entry, loads the image from image_folder
+   - Tokenizes the conversations using the LLaVA tokenizer
+   - The <image> token gets replaced with 576 visual tokens (24x24 patches
+     from CLIP's output for a 336x336 image)
+
+3. TRAINS FOR 1 EPOCH:
+   - Uses DeepSpeed ZeRO-3 (shards model across GPUs)
+   - Batch size: 16 per device
+   - Learning rate: 2e-5 with cosine decay and 3% warmup
+   - Mixed precision: BF16
+   - Gradient checkpointing enabled (saves memory)
+   - Loss: standard next-token prediction cross-entropy loss on the
+     "gpt" response tokens only (human/system tokens are masked)
+
+4. SAVES CHECKPOINT:
+   - Saves complete model weights to --output_dir
+   - Includes: model weights, tokenizer, config, mm_projector
+
+5. WHAT'S BEING TRAINED:
+   - ALL parameters of the model are fine-tuned (full SFT, not LoRA)
+   - This includes the vision encoder, projector, and LLM backbone
+   - Total trainable parameters: ~7.5 billion
+
+4E. SFT OUTPUT / CHECKPOINT
+----------------------------
+
+After SFT completes, you get a DIRECTORY (not a single file) at --output_dir:
+
+  /your/sft/checkpoint/
+    ├── config.json              (model configuration)
+    ├── generation_config.json   (generation settings)
+    ├── model-00001-of-00004.safetensors  (sharded model weights)
+    ├── model-00002-of-00004.safetensors
+    ├── model-00003-of-00004.safetensors
+    ├── model-00004-of-00004.safetensors
+    ├── model.safetensors.index.json
+    ├── special_tokens_map.json
+    ├── tokenizer_config.json
+    ├── tokenizer.json
+    ├── tokenizer.model
+    └── trainer_state.json
+
+This directory IS your SFT checkpoint. Use this path as --model-path in the
+RL training phase.
+
+================================================================================
+5. CALCULATING ACCURACY AFTER SFT
+================================================================================
+
+The codebase does NOT include a standalone SFT evaluation script. But you can
+calculate SFT accuracy in TWO ways:
+
+METHOD 1: USE THE RL CODEBASE IN EVAL-ONLY MODE
+------------------------------------------------
+
+The RL training code (main.py) evaluates the model at the start and
+periodically during training. The FIRST evaluation (iteration 0) effectively
+measures the SFT checkpoint's accuracy before any RL updates.
+
+Look at the training logs for the first few iterations. The
+"episode_success_rate" metric at the beginning (before any PPO updates are
+applied) gives you the SFT accuracy.
+
+When you run RL training, the first rollout collects 512 environment steps
+using the model BEFORE any PPO update happens, so the reported success rate
+in the initial iterations is your SFT baseline.
+
+METHOD 2: WRITE A SIMPLE EVALUATION SCRIPT
+-------------------------------------------
+
+You can write a standalone evaluation script like this:
+
+  -----------------------------------------------------------------------
+  # eval_sft_numberline.py
+  # Place this in VLM_PPO/ directory
+
+  import torch
+  import gymnasium as gym
+  import gym_cards
+  import numpy as np
+  from PIL import Image
+  from functools import partial
+
+  from llava.constants import IMAGE_TOKEN_INDEX, DEFAULT_IMAGE_TOKEN
+  from llava.conversation import conv_templates
+  from llava.mm_utils import tokenizer_image_token
+  from llava.model.language_model.llava_mistral import LlavaMistralForCausalLM
+  from transformers import AutoTokenizer
+
+  from a2c_ppo_acktr.rl_utils import get_prompt, text_projection
+
+  # === CONFIGURATION ===
+  MODEL_PATH = "/path/to/your/sft/checkpoint"  # <-- SET THIS
+  NUM_EVAL_EPISODES = 200
+  TEMPERATURE = 0.2
+  MAX_NEW_TOKENS = 256
+  ENV_NAME = "gym_cards/NumberLine-v0"
+
+  # Load model
+  tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
+  model = LlavaMistralForCausalLM.from_pretrained(MODEL_PATH)
+  model.eval()
+  model = model.cuda()
+
+  vision_tower = model.get_vision_tower()
+  if not vision_tower.is_loaded:
+      vision_tower.load_model()
+  vision_tower = vision_tower.cuda()
+  image_processor = vision_tower.image_processor
+
+  # Create environment
+  env = gym.make(ENV_NAME)
+
+  # Build prompt
+  qs = get_prompt(ENV_NAME, action_only=False)
+  qs = DEFAULT_IMAGE_TOKEN + "\n" + qs
+  conv = conv_templates["llava_v1"].copy()
+  conv.append_message(conv.roles[0], qs)
+  conv.append_message(conv.roles[1], None)
+  prompt = conv.get_prompt()
+
+  successes = 0
+  total_rewards = []
+
+  for episode in range(NUM_EVAL_EPISODES):
+      obs, info = env.reset()
+      done = False
+      truncated = False
+      episode_reward = 0
+
+      while not done and not truncated:
+          # Process image
+          pil_image = Image.fromarray(obs)
+          image_tensor = image_processor.preprocess(
+              pil_image, return_tensors='pt'
+          )['pixel_values'].cuda().to(model.dtype)
+
+          # Tokenize prompt
+          input_ids = tokenizer_image_token(
+              prompt, tokenizer, IMAGE_TOKEN_INDEX, return_tensors='pt'
+          ).unsqueeze(0).cuda()
+
+          # Prepare multimodal inputs
+          _, _, _, _, inputs_embeds, _ = model.prepare_inputs_labels_for_multimodal(
+              input_ids, None, None, None, None, image_tensor
+          )
+
+          # Generate
+          with torch.inference_mode():
+              outputs = model.generate(
+                  inputs_embeds=inputs_embeds,
+                  do_sample=True,
+                  temperature=TEMPERATURE,
+                  max_new_tokens=MAX_NEW_TOKENS,
+                  use_cache=True,
+                  pad_token_id=tokenizer.eos_token_id,
+              )
+
+          text_output = tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+          # Parse action
+          action_idx = text_projection([text_output], ENV_NAME)
+          action = action_idx.item()
+
+          obs, reward, done, truncated, info = env.step(action)
+          episode_reward += reward
+
+          # Update prompt with new info (if needed for multi-step)
+          qs = get_prompt(ENV_NAME, action_only=False, infos=[info])
+          qs = DEFAULT_IMAGE_TOKEN + "\n" + qs
+          conv = conv_templates["llava_v1"].copy()
+          conv.append_message(conv.roles[0], qs)
+          conv.append_message(conv.roles[1], None)
+          prompt = conv.get_prompt()
+
+      if episode_reward > 0:
+          successes += 1
+      total_rewards.append(episode_reward)
+
+      if (episode + 1) % 50 == 0:
+          print(f"Episode {episode+1}/{NUM_EVAL_EPISODES}, "
+                f"Success Rate: {successes/(episode+1)*100:.1f}%, "
+                f"Mean Reward: {np.mean(total_rewards):.3f}")
+
+  print(f"\n=== FINAL SFT ACCURACY ===")
+  print(f"Success Rate: {successes/NUM_EVAL_EPISODES*100:.1f}%")
+  print(f"Mean Reward: {np.mean(total_rewards):.3f}")
+  print(f"Episodes: {NUM_EVAL_EPISODES}")
+  -----------------------------------------------------------------------
+
+  Run with:
+    cd VLM_PPO
+    python eval_sft_numberline.py
+
+EXPECTED SFT ACCURACY FOR NUMBERLINE:
+  - Paper reports ~50.2% for LLaVA-SFT (with CoT)
+  - Without CoT, accuracy drops significantly
+  - This varies with SFT dataset size and quality
+
+================================================================================
+6. PHASE 2: RL TRAINING (PPO)
+================================================================================
+
+6A. HOW RL USES THE SFT CHECKPOINT
+------------------------------------
+
+1. The SFT checkpoint is loaded as the STARTING POINT for RL training
+2. LoRA adapters are applied ON TOP of the SFT model (not full fine-tuning)
+3. The SFT model provides the initial policy (pi_0) and is also used for
+   the value function base
+4. Key difference from SFT: the model now INTERACTS with the live environment
+   and learns from REWARDS, not from static demonstrations
+
+Loading flow in main.py:
+  - If model_path contains "lora": loads base + LoRA weights, merges them
+  - Otherwise: loads full model from model_path (your SFT checkpoint)
+  - Then applies FRESH LoRA adapters for RL training
+  - Also creates a 3-layer MLP value head on top of the model
+
+6B. THE RL TRAINING LOOP STEP-BY-STEP
+---------------------------------------
+
+The training loop in main.py works as follows:
+
+  Total env steps: 15000 (--num-env-steps)
+  Steps per update: 512 (--num-steps)
+  Num updates = 15000 / 512 / num_processes = ~15 updates (with 1 process)
+
+  For each UPDATE iteration j:
+
+    1. COLLECT DATA (on-policy rollout):
+       For step = 0 to 511:
+         a. Take current observation (image tensor)
+         b. Process image through image_processor -> pixel_values
+         c. Construct prompt: <image_token>\n<CoT prompt text>
+         d. Tokenize prompt -> input_ids
+         e. Call actor_critic.act():
+            - llava_generate() generates text output with sampling
+            - text_projection() parses output to find action ("-" or "+")
+            - Returns: value estimate, output_ids, action, action_log_prob
+         f. Execute action in environment -> obs, reward, done, info
+         g. Store transition in rollouts buffer:
+            (obs, output_ids, action, action_log_prob, value, reward, mask)
+         h. If episode done:
+            - Record episode reward and success (reward > 0 = success)
+            - Environment auto-resets
+
+    2. COMPUTE RETURNS:
+       - Get V(s_final) from actor_critic.get_value()
+       - Use GAE (Generalized Advantage Estimation) to compute advantages:
+         delta_t = r_t + gamma * V(s_{t+1}) * mask - V(s_t)
+         A_t = sum_{l=0}^{T-t} (gamma * lambda)^l * delta_l
+       - Returns = Advantages + Values
+       - gamma = 0.9, gae-lambda = 0.95
+
+    3. PPO UPDATE:
+       - Normalize advantages (subtract mean, divide by std)
+       - For ppo_epoch = 4 epochs:
+         - Sample mini-batches from rollout buffer
+         - For each mini-batch:
+           a. Re-evaluate actions: actor_critic.evaluate_actions()
+              -> new values, new action_log_probs
+           b. Compute ratio = exp(new_log_prob - old_log_prob)
+           c. Compute clipped surrogate objective:
+              surr1 = ratio * advantage
+              surr2 = clip(ratio, 1-eps, 1+eps) * advantage
+              action_loss = -min(surr1, surr2)
+              * Safety: if any ratio > 10, use -surr2 only
+           d. Compute value loss (clipped):
+              v_clipped = v_old + clip(v_new - v_old, -eps, eps)
+              value_loss = 0.5 * max(MSE(v_new, returns), MSE(v_clipped, returns))
+           e. Total loss = value_loss_coef * value_loss + action_loss
+           f. Backward pass with gradient accumulation (128 steps)
+           g. Gradient clipping (max_grad_norm = 0.01)
+           h. Optimizer step
+
+    4. LEARNING RATE UPDATE:
+       - Cosine annealing: 1e-5 -> 1e-9 over 25 steps
+
+    5. LOGGING:
+       - Print mean/median/min/max rewards, success rate
+       - If wandb enabled: log all metrics
+
+6C. THE PROMPT (WHAT THE VLM SEES)
+------------------------------------
+
+For NumberLine, the FULL prompt with CoT is constructed in rl_utils.py:
+
+  "You are playing a game called number line. You will see a target number
+   and a current number in the image. And your goal is to move the current
+   number closer to the target by choosing either adding or subtracting one
+   to the current number. Your response should be a valid json file in the
+   following format:
+   {
+    "current number": "x",
+    "target number": "x",
+    "thoughts": "{first read out the current and target number, then think
+                  carefully about which action to choose}",
+    "action": "-" or "+"
+   }"
+
+This is prepended with the <image> token and wrapped in the LLaVA v1
+conversation template:
+
+  [INST] <image>
+  <prompt text> [/INST]
+
+The model then generates a JSON response like:
+  {
+    "current number": "1",
+    "target number": "4",
+    "thoughts": "The current number is 1 and the target is 4. Since 4 > 1,
+                 I should add to move closer.",
+    "action": "+"
+  }
+
+WITHOUT CoT (--action_only_prompt flag), the prompt becomes:
+  "... Your response should be a valid json file in the following format:
+   {
+    "action": "-" or "+"
+   }"
+
+6D. HOW TEXT OUTPUT IS PARSED TO ACTIONS
+-----------------------------------------
+
+FILE: a2c_ppo_acktr/rl_utils.py -> text_projection()
+
+For NumberLine:
+  action_list = ["-", "+"]
+
+The parsing logic:
+  1. Find '"action":' in the output string
+  2. Take everything after that
+  3. Check which actions from action_list appear in that substring
+  4. If exactly ONE action is found -> return its index (0 for "-", 1 for "+")
+  5. If ZERO or MULTIPLE actions found -> return RANDOM index (exploration!)
+
+This random fallback is important: if the model generates invalid output,
+it becomes random exploration rather than crashing. Over training, the model
+learns to generate valid outputs more consistently.
+
+6E. REWARD FUNCTION
+---------------------
+
+NumberLine's reward is SHAPED (not just sparse):
+
+  +1  : Current position == Target position (SUCCESS! Episode ends)
+  -1  : Action moved current AWAY from or EQUAL distance to target
+   0  : Action moved current CLOSER to target (but not there yet)
+
+This shaping helps RL: the agent gets immediate negative feedback for bad
+moves and learns faster than with a pure sparse reward (only +1 at end).
+
+Additionally, if invalid text is generated (random fallback), the random
+action has a 50% chance of being wrong -> -1 reward, pushing the model to
+generate valid text.
+
+6F. THE PPO ALGORITHM DETAILS
+-------------------------------
+
+FILE: a2c_ppo_acktr/algo/ppo.py
+
+Standard clipped PPO with these specifics:
+
+  HYPERPARAMETERS (for NumberLine):
+    clip_param = 0.1 (epsilon for clipping)
+    ppo_epoch = 4 (epochs per update)
+    mini_batch_size = 1 (samples per mini-batch)
+    grad_accum_steps = 128 (effective batch = 128)
+    value_loss_coef = 0.5
+    entropy_coef = 0.01 (note: not actually used in the loss!)
+    max_grad_norm = 0.01
+    gamma = 0.9 (discount factor)
+    gae_lambda = 0.95
+
+  LOSS COMPUTATION:
+    advantages = returns - value_predictions
+    advantages = (adv - mean(adv)) / (std(adv) + 1e-5)
+
+    ratio = exp(log_prob_new - log_prob_old)
+    surr1 = ratio * advantages
+    surr2 = clip(ratio, 1-0.1, 1+0.1) * advantages
+
+    # Safety check (from HuggingFace TRL):
+    if any(ratio > 10):
+        action_loss = -mean(surr2)   # use only clipped version
+    else:
+        action_loss = -mean(min(surr1, surr2))  # standard PPO
+
+    value_loss = 0.5 * max(
+        (values - returns)^2,
+        (clip(values, v_old - eps, v_old + eps) - returns)^2
+    )
+
+    total_loss = 0.5 * value_loss + action_loss
+
+6G. THE LAMBDA (THOUGHT-PROB-COEF) TRICK
+------------------------------------------
+
+FILE: a2c_ppo_acktr/llava_interface/interface.py -> llava_evaluate()
+
+This is the KEY TECHNICAL CONTRIBUTION of the paper.
+
+PROBLEM:
+  When computing the policy gradient, we need log pi(action | state).
+  But the VLM generates BOTH CoT tokens AND action tokens.
+  The CoT portion has MUCH larger absolute log-probability than the
+  action portion (e.g., -37.6 vs -0.4), drowning out the action signal.
+
+SOLUTION:
+  Split the log-probabilities at the "action": boundary:
+    thought_log_prob = sum of log-probs for tokens BEFORE "action":
+    action_tokens_log_prob = sum of log-probs for tokens AFTER "action":
+
+  Apply scaling:
+    total_log_prob = lambda * thought_log_prob + action_tokens_log_prob
+
+  Where lambda = --thought-prob-coef = 0.5 for NumberLine
+
+HOW THE BOUNDARY IS FOUND:
+  - Hard-coded token IDs: [29908, 2467, 1115]
+  - These encode the string '"action":' in the Mistral tokenizer
+  - WARNING: These IDs are tokenizer-version-dependent!
+  - If using a different tokenizer version, you MUST verify/change these IDs
+  - To check: print(tokenizer.encode('"action":'))
+
+WHAT HAPPENS IF "action": IS NOT FOUND:
+  - Falls back to using the last 4 non-zero tokens as the "action" portion
+  - If that also fails, returns fixed log-probs (-2 for total, -1 for action)
+  - This prevents crashes from malformed outputs
+
+6H. LORA CONFIGURATION
+------------------------
+
+FILE: main.py (lines around LoRA setup)
+
+  LoraConfig(
+      r=128,                    # LoRA rank (relatively large)
+      lora_alpha=256,           # Scaling factor = alpha/r = 2
+      target_modules=<all linear layers>,  # Found by find_all_linear_names()
+      lora_dropout=0.05,        # Dropout for regularization
+      bias="none",              # No bias training
+      task_type="CAUSAL_LM",    # Causal language modeling
+  )
+
+WHAT LAYERS GET LoRA:
+  - ALL linear layers in Mistral-7B (q_proj, k_proj, v_proj, o_proj,
+    gate_proj, up_proj, down_proj)
+  - ALL linear layers in the MLP projector
+  - ALL linear layers in CLIP ViT vision encoder (when --train-vision all)
+  - EXCLUDES: lm_head (output head), value_head, vision_resampler
+
+WHY LoRA AND NOT FULL FINE-TUNING?
+  - PPO requires storing old and new log-probs, which means effectively
+    double the memory for full fine-tuning
+  - LoRA dramatically reduces trainable parameters (~1-2% of total)
+  - With r=128, still captures significant adaptation capacity
+  - DeepSpeed ZeRO-2 + LoRA makes training feasible on consumer GPUs
+
+6I. VALUE HEAD ARCHITECTURE
+-----------------------------
+
+FILE: a2c_ppo_acktr/model.py -> VLMValue class
+
+  value_head = Sequential(
+      Linear(4096, 1024),    # 4096 = Mistral hidden size
+      ReLU(),
+      Linear(1024, 512),
+      ReLU(),
+      Linear(512, 1)         # Scalar value output
+  )
+
+HOW IT WORKS:
+  1. Take the LLaVA model's last hidden state at the LAST token position
+  2. Pass it through the 3-layer MLP -> scalar V(s)
+  3. This estimates "how good is the current state?" for GAE computation
+  4. The value head is trained from scratch (randomly initialized)
+  5. It's on the SAME device as the base model (dtype=float16)
+
+6J. HOW TO RUN RL TRAINING
+----------------------------
+
+  1. Make sure you have the SFT checkpoint ready (Phase 1 output)
+  2. Edit VLM_PPO/scripts/run_nl.sh:
+
+     # Set your model path to the SFT checkpoint:
+     --model-path /path/to/your/sft/checkpoint
+
+     # Set GPU IDs (match config_zero2.yaml num_processes):
+     CUDA_VISIBLE_DEVICES="0,1"
+
+  3. Edit VLM_PPO/scripts/config_zero2.yaml:
+     # Set num_processes to your number of GPUs:
+     num_processes: 2
+
+  4. Run:
+     cd VLM_PPO/scripts
+     bash run_nl.sh
+
+  ALTERNATIVE: SKIP SFT AND USE BASE MODEL DIRECTLY:
+     # Just for experimentation (won't match paper results):
+     --model-path liuhaotian/llava-v1.6-mistral-7b
+
+  OPTIONAL FLAGS:
+     --q4                    # Enable 4-bit quantization (saves memory)
+     --q8                    # Enable 8-bit quantization
+     --use-wandb             # Enable Weights & Biases logging
+     --wandb-project NAME    # W&B project name
+     --wandb-run NAME        # W&B run name
+     --action_only_prompt    # Disable CoT (not recommended)
+
+FULL run_nl.sh COMMAND:
+  TOKENIZERS_PARALLELISM=false \
+  CUDA_VISIBLE_DEVICES="0,1" \
+  accelerate launch \
+    --config_file config_zero2.yaml \
+    --main_process_port 29488 \
+    ../main.py \
+    --env-name gym_cards/NumberLine-v0 \
+    --init-lr 1e-5 \
+    --end-lr 1e-9 \
+    --lr_max_steps 25 \
+    --eval-num-per-episode 200 \
+    --num-env-steps 15000 \
+    --num-steps 512 \
+    --grad-accum-steps 128 \
+    --max-new-tokens 256 \
+    --thought-prob-coef 0.5 \
+    --use-gae \
+    --seed 1 \
+    --temperature 0.2 \
+    --ppo-epoch 4 \
+    --mini-batch-size 1 \
+    --model-path /your_sft_checkpoint_for_numberline \
+    --use-lora \
+    --train-vision all
+
+================================================================================
+7. ALL FILES INVOLVED AND WHAT THEY DO
+================================================================================
+
+FILES SPECIFIC TO NUMBERLINE TRAINING:
+
+  gym-cards/gym_cards/envs/numberline.py
+    - NumberLineEnv class: the game environment
+    - Defines observation (300x300 image), actions (0: "-", 1: "+")
+    - Reward shaping: +1 success, -1 wrong direction, 0 correct direction
+    - Font requirement: dejavu/DejaVuSans-Bold.ttf
+
+  gym-cards/gym_cards/__init__.py
+    - Registers 'gym_cards/NumberLine-v0' in gymnasium
+
+  gym-cards/setup.py
+    - Makes gym-cards pip-installable
+    - Dependencies: gymnasium, numpy, Pillow
+
+  VLM_PPO/scripts/run_nl.sh
+    - Bash script to launch NumberLine RL training
+    - Sets all hyperparameters for NumberLine
+
+  VLM_PPO/scripts/config_zero2.yaml
+    - DeepSpeed ZeRO-2 configuration
+    - Sets: zero_stage=2, bf16 mixed precision, CPU optimizer offload
+    - num_processes: number of GPUs to use
+
+FILES SHARED ACROSS ALL TASKS:
+
+  finetune.sh (repo root)
+    - Template SFT script for LLaVA fine-tuning
+    - Uses DeepSpeed ZeRO-3, 4 GPUs, 1 epoch
+
+  VLM_PPO/main.py
+    - Main RL training entry point
+    - Loads model, creates env, constructs prompt
+    - Runs the on-policy PPO training loop
+    - Handles evaluation and logging
+
+  VLM_PPO/patch.py
+    - Replaces standard LLaMA attention with xformers attention
+    - Speeds up training and reduces memory usage
+    - Called at the very start of main.py
+
+  VLM_PPO/a2c_ppo_acktr/arguments.py
+    - Defines ALL command-line arguments
+    - Learning rates, PPO hypers, model paths, etc.
+
+  VLM_PPO/a2c_ppo_acktr/rl_utils.py
+    - get_prompt(): builds task-specific CoT prompts
+    - text_projection(): parses VLM text to discrete actions
+
+  VLM_PPO/a2c_ppo_acktr/model.py
+    - VLMValue: base model + value head MLP
+    - VLMPolicy: orchestrates generation, action parsing, evaluation
+
+  VLM_PPO/a2c_ppo_acktr/llava_interface/interface.py
+    - llava_generate(): generates text from the VLM with sampling
+    - llava_evaluate(): re-evaluates log-probs for PPO updates
+    - Implements the lambda scaling trick for CoT vs action tokens
+
+  VLM_PPO/a2c_ppo_acktr/llava_interface/utils.py
+    - init_pretrained_model(): initializes LLaVA with vision tower
+    - find_all_linear_names(): identifies LoRA target modules
+    - load_lora_model(): loads pre-existing LoRA checkpoints
+
+  VLM_PPO/a2c_ppo_acktr/algo/ppo.py
+    - PPO update algorithm with clipped surrogate and value objectives
+    - Gradient accumulation and clipping via accelerate
+
+  VLM_PPO/a2c_ppo_acktr/storage.py
+    - RolloutStorage: stores on-policy trajectories
+    - compute_returns(): GAE or standard returns computation
+    - feed_forward_generator(): yields mini-batches for PPO
+
+  VLM_PPO/a2c_ppo_acktr/envs.py
+    - make_vec_envs(): creates vectorized gymnasium environments
+    - VecPyTorch: wraps environments for PyTorch tensor I/O
+    - Supports DummyVecEnv (single-process) and SubprocVecEnv (multi-process)
+
+  LLaVA/ (entire directory)
+    - Modified fork of the LLaVA repository
+    - llava/model/: LLaVA model definitions (LLaMA and Mistral variants)
+    - llava/train/: Training scripts (used for SFT)
+    - llava/conversation.py: Prompt templates
+    - llava/mm_utils.py: Image tokenization utilities
+    - llava/constants.py: Special token definitions
+
+================================================================================
+8. DEPENDENCIES AND INSTALLATION (STEP-BY-STEP)
+================================================================================
+
+=== HARDWARE REQUIREMENTS ===
+  - NVIDIA GPU(s) with CUDA support
+  - Minimum: 1x GPU with 24GB VRAM (e.g., RTX 3090/4090) with 4-bit quantization
+  - Recommended: 2x GPUs with 40GB+ VRAM each (e.g., A100-40G)
+  - For SFT: 4x GPUs recommended (uses ZeRO-3 model sharding)
+  - RAM: 64GB+ recommended
+  - Storage: ~50GB for model weights + data
+
+=== OPERATING SYSTEM ===
+  - Linux recommended (Ubuntu 20.04/22.04)
+  - Windows: possible but may require adjustments to shell scripts
+  - macOS: NOT supported (no CUDA)
+
+=== STEP-BY-STEP INSTALLATION ===
+
+STEP 1: Install Conda (if not already installed)
+  # Download Miniconda:
+  wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+  bash Miniconda3-latest-Linux-x86_64.sh
+  # Follow prompts, then restart terminal
+
+STEP 2: Create the Conda environment
+  conda create -n vrenv python=3.10.0
+  conda activate vrenv
+
+STEP 3: Install CUDA toolkit (if not already available)
+  # Check CUDA version:
+  nvidia-smi
+  # Install matching CUDA toolkit via conda:
+  conda install -c nvidia cuda-toolkit=11.8
+  # Or use the system CUDA if already installed
+
+STEP 4: Clone the repository
+  git clone https://github.com/RL4VLM/RL4VLM.git
+  cd RL4VLM
+
+STEP 5: Install LLaVA (MUST be first!)
+  pip install -e LLaVA
+  # This installs:
+  #   torch==2.1.2, torchvision==0.16.2
+  #   transformers==4.37.2, tokenizers==0.15.1
+  #   sentencepiece==0.1.99
+  #   accelerate==0.21.0
+  #   peft, bitsandbytes
+  #   gradio, einops, timm
+  #   and many other dependencies
+
+STEP 6: Install gym-cards
+  pip install -e gym-cards
+  # This installs:
+  #   gymnasium, numpy, Pillow
+
+STEP 7: Install additional RL dependencies
+  pip install gymnasium[atari,accept-rom-license]
+  pip install stable-baselines3
+  pip install wandb
+  pip install deepspeed
+  pip install sentencepiece
+  pip install git+https://github.com/openai/CLIP.git
+
+STEP 8: Install xformers (MUST be last!)
+  pip install xformers
+  # Must be installed AFTER torch to ensure version compatibility
+
+STEP 9: Install DejaVu font (for NumberLine rendering)
+  # The numberline.py expects 'dejavu/DejaVuSans-Bold.ttf'
+  # Option A: Download fonts from the dejavu.zip in the repo
+  # Option B: Install system-wide:
+  sudo apt-get install fonts-dejavu-core
+  # Then create symlink or copy:
+  mkdir -p dejavu
+  cp /usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf dejavu/
+
+STEP 10: Verify installation
+  python -c "import torch; print(torch.cuda.is_available())"
+  python -c "import llava; print('LLaVA OK')"
+  python -c "import gym_cards; import gymnasium as gym; env = gym.make('gym_cards/NumberLine-v0'); obs, info = env.reset(); print(obs.shape, info)"
+  python -c "import xformers; print('xformers OK')"
+  python -c "import deepspeed; print('deepspeed OK')"
+
+=== COMPLETE PIP DEPENDENCY LIST ===
+
+  Core ML:
+    torch==2.1.2
+    torchvision==0.16.2
+    transformers==4.37.2
+    tokenizers==0.15.1
+    accelerate==0.21.0
+    peft (any recent version)
+    bitsandbytes (any recent version)
+    deepspeed==0.12.6
+    sentencepiece==0.1.99
+
+  LLaVA specific:
+    einops==0.6.1
+    einops-exts==0.0.4
+    timm==0.6.13
+    gradio==4.16.0
+    scikit-learn==1.2.2
+
+  RL specific:
+    gymnasium (with atari extras)
+    stable-baselines3
+    numpy
+    Pillow
+
+  Utilities:
+    wandb (for logging)
+    xformers (for efficient attention)
+    clip (OpenAI's CLIP)
+    matplotlib
+    tqdm
+
+=== TOKENIZER VERSION WARNING ===
+
+  The code hard-codes token IDs [29908, 2467, 1115] for the string '"action":'
+  in the Mistral tokenizer. If you install a DIFFERENT VERSION of the
+  tokenizers package, these IDs may change, and the lambda scaling trick
+  will silently fail (it will fall back to using the last 4 tokens).
+
+  To verify your tokenizer IDs:
+    from transformers import AutoTokenizer
+    tokenizer = AutoTokenizer.from_pretrained("liuhaotian/llava-v1.6-mistral-7b")
+    print(tokenizer.encode('"action":'))
+    # Expected: [1, 29908, 2467, 1115]  (1 is BOS token)
+
+  If the output is different, update the target tensor in:
+    VLM_PPO/a2c_ppo_acktr/llava_interface/interface.py (line ~66)
+    target = torch.tensor([YOUR_TOKEN_ID_1, YOUR_TOKEN_ID_2, YOUR_TOKEN_ID_3])
+
+================================================================================
+9. HARDWARE REQUIREMENTS
+================================================================================
+
+FOR SFT (Phase 1):
+  - Recommended: 4x A100 (40GB) or 4x A6000 (48GB)
+  - finetune.sh uses DeepSpeed ZeRO-3 which shards model across GPUs
+  - With 4-bit quantization: 2x RTX 3090/4090 (24GB) might work
+  - Full SFT trains ALL 7.5B parameters
+  - Training time: ~1-4 hours depending on data size and GPU count
+
+FOR RL (Phase 2):
+  - Recommended: 2x A100 (40GB)
+  - run_nl.sh defaults to 2 GPUs with ZeRO-2
+  - With 4-bit quantization (--q4): 1x RTX 3090/4090 (24GB) may work
+  - LoRA reduces memory significantly (only ~1-2% params trainable)
+  - Training time: ~2-6 hours for 15000 env steps
+
+FOR EVALUATION ONLY:
+  - 1x GPU with 16GB+ VRAM (e.g., RTX 4060 Ti, V100)
+  - With 4-bit: 1x GPU with 8GB+ VRAM
+
+MEMORY USAGE ESTIMATES:
+  - Model weights (bf16): ~14GB
+  - Model weights (4-bit): ~4GB
+  - LoRA adapters: ~200MB
+  - Value head: ~10MB
+  - Gradients + optimizer states: ~10-20GB (ZeRO-2 shards across GPUs)
+  - Rollout buffer: ~1-2GB
+
+================================================================================
+10. RESULTS AND EXPECTED PERFORMANCE
+================================================================================
+
+NUMBERLINE RESULTS FROM THE PAPER:
+
+  Method             Success Rate (%)    Notes
+  ─────────────────────────────────────────────────────
+  Random Policy       ~20%               2-action, need ~5 correct in a row
+  CNN + RL            87.1%              Standard CNN-based RL agent
+  GPT-4V              65.5%              Zero-shot, no training
+  Gemini              51.7%              Zero-shot, no training
+  LLaVA Base          ~10-15%            No fine-tuning at all
+  LLaVA SFT (CoT)     50.2%             After SFT only
+  LLaVA SFT (no CoT)  ~25-30%           SFT without chain-of-thought
+  RL4VLM (CoT)        89.4%             SFT + RL with CoT (BEST)
+  RL4VLM (no CoT)     26.9%             SFT + RL without CoT
+
+KEY TAKEAWAYS:
+  1. SFT alone gets ~50% on NumberLine (decent but not great)
+  2. RL training DOUBLES accuracy from ~50% -> ~89%
+  3. CoT is ESSENTIAL: without it, RL only gets 27% (worse than SFT alone!)
+  4. RL4VLM beats GPT-4V (65.5%) and matches CNN+RL (87.1%)
+  5. The 89.4% is NOT 100% - some failures remain due to:
+     - Occasional misreadings of numbers in the image
+     - Edge cases where the model generates malformed JSON
+     - Episodes where the model starts with a wrong action and can't recover
+
+TRAINING CURVES (what to expect):
+  - Iteration 0-2: success rate ~40-55% (still mostly SFT policy)
+  - Iteration 3-8: rapid improvement to ~70-80%
+  - Iteration 8-15: gradual improvement to ~85-90%
+  - Convergence around iteration 15-20
+
+================================================================================
+11. COMMON ISSUES AND TROUBLESHOOTING
+================================================================================
+
+ISSUE 1: "dejavu/DejaVuSans-Bold.ttf not found"
+  FIX: Install the DejaVu font or download from the repo's dejavu.zip
+       Place the font file so it's accessible from the working directory
+       Or modify numberline.py to point to the correct font path
+
+ISSUE 2: Tokenizer version mismatch (wrong action token IDs)
+  SYMPTOMS: Training runs but success rate doesn't improve, or lambda
+            scaling has no effect
+  FIX: Verify token IDs (see Section 8, Tokenizer Warning)
+       Update target tensor in interface.py
+
+ISSUE 3: NCCL timeout with multiple GPUs
+  FIX: Reduce num_processes in config_zero2.yaml to 1
+       Or increase NCCL timeout: export NCCL_TIMEOUT=1800
+
+ISSUE 4: Out of memory (OOM)
+  FIX: Use --q4 flag for 4-bit quantization
+       Reduce --max-new-tokens to 128
+       Reduce --num-steps to 256
+       Reduce batch size in finetune.sh
+
+ISSUE 5: "xformers not found"
+  FIX: pip install xformers (must be installed AFTER torch)
+       Make sure torch version matches xformers compatibility
+
+ISSUE 6: LLaVA import errors
+  FIX: Make sure LLaVA is installed first: pip install -e LLaVA
+       Check transformers version: should be 4.37.2
+
+ISSUE 7: Accelerate/DeepSpeed config issues
+  FIX: Run "accelerate config" to set up a fresh configuration
+       Or ensure config_zero2.yaml matches your GPU setup
+
+ISSUE 8: Model downloads fail
+  FIX: Login to HuggingFace: huggingface-cli login
+       Set HF_HOME for custom cache dir: export HF_HOME=/path/to/cache
+
+ISSUE 9: SFT data not found
+  FIX: Download from https://huggingface.co/LEVI-Project/sft-data
+       Update --data_path and --image_folder in finetune.sh
+
+ISSUE 10: Training loss is NaN
+  FIX: This is handled in the code (exits with error message)
+       Usually caused by learning rate too high or corrupted data
+       Try reducing --init-lr to 5e-6
+
+================================================================================
+12. FULL COMMAND REFERENCE
+================================================================================
+
+=== SFT TRAINING ===
+
+  # 1. Download SFT data
+  pip install huggingface-hub
+  huggingface-cli download LEVI-Project/sft-data --local-dir ./sft-data
+
+  # 2. Navigate to LLaVA directory
+  cd RL4VLM/LLaVA
+
+  # 3. Run SFT (edit finetune.sh paths first!)
+  bash ../finetune.sh
+
+  # Arguments to edit in finetune.sh:
+  #   --data_path /path/to/sft-data/numberline.json
+  #   --image_folder /path/to/sft-data/images/
+  #   --output_dir /path/to/save/sft_checkpoint/
+  #   --include localhost:0,1,2,3  -> change GPU list as needed
+
+=== RL TRAINING ===
+
+  # 1. Navigate to scripts directory
+  cd RL4VLM/VLM_PPO/scripts
+
+  # 2. Edit config_zero2.yaml (set num_processes = your GPU count)
+
+  # 3. Edit run_nl.sh (set --model-path to your SFT checkpoint)
+
+  # 4. Run RL training
+  bash run_nl.sh
+
+  # OR run directly:
+  TOKENIZERS_PARALLELISM=false \
+  CUDA_VISIBLE_DEVICES="0,1" \
+  accelerate launch \
+    --config_file config_zero2.yaml \
+    --main_process_port 29488 \
+    ../main.py \
+    --env-name gym_cards/NumberLine-v0 \
+    --init-lr 1e-5 \
+    --end-lr 1e-9 \
+    --lr_max_steps 25 \
+    --eval-num-per-episode 200 \
+    --num-env-steps 15000 \
+    --num-steps 512 \
+    --grad-accum-steps 128 \
+    --max-new-tokens 256 \
+    --thought-prob-coef 0.5 \
+    --use-gae \
+    --seed 1 \
+    --temperature 0.2 \
+    --ppo-epoch 4 \
+    --mini-batch-size 1 \
+    --model-path /your/sft/checkpoint \
+    --use-lora \
+    --train-vision all
+
+=== SKIP SFT (FOR EXPERIMENTATION) ===
+
+  # Use base LLaVA model directly (no SFT step needed):
+  --model-path liuhaotian/llava-v1.6-mistral-7b
+
+=== EVALUATION ONLY ===
+
+  # Use the eval script from Section 5 (eval_sft_numberline.py)
+  cd RL4VLM/VLM_PPO
+  python eval_sft_numberline.py
+
+=== WITH QUANTIZATION (LOW MEMORY) ===
+
+  # 4-bit quantization:
+  bash run_nl.sh  # uncomment --q4 at the end
+
+  # 8-bit quantization:
+  # Add --q8 flag instead of --q4
+
+=== WITH WANDB LOGGING ===
+
+  # Uncomment these lines in run_nl.sh:
+  --use-wandb \
+  --wandb-project my_rl4vlm_project \
+  --wandb-run numberline_run1
+
+=== COMPLETE SETUP FROM SCRATCH (COPY-PASTE COMMANDS) ===
+
+  # Create environment
+  conda create -n vrenv python=3.10.0 -y
+  conda activate vrenv
+
+  # Clone repo
+  git clone https://github.com/RL4VLM/RL4VLM.git
+  cd RL4VLM
+
+  # Install packages (ORDER MATTERS!)
+  pip install -e LLaVA
+  pip install -e gym-cards
+  pip install gymnasium[atari,accept-rom-license]
+  pip install stable-baselines3 wandb deepspeed sentencepiece
+  pip install git+https://github.com/openai/CLIP.git
+  pip install xformers  # MUST BE LAST
+
+  # Download SFT data
+  pip install huggingface-hub
+  huggingface-cli download LEVI-Project/sft-data --local-dir ./sft-data
+
+  # Setup fonts
+  mkdir -p dejavu
+  # Copy DejaVuSans-Bold.ttf to dejavu/ directory
+
+  # Verify
+  python -c "import torch; print('CUDA:', torch.cuda.is_available())"
+  python -c "import gym_cards; import gymnasium as gym; env = gym.make('gym_cards/NumberLine-v0'); print(env.reset()[1])"
+
+  # SFT Phase (edit paths in finetune.sh first!)
+  cd LLaVA
+  bash ../finetune.sh
+  cd ..
+
+  # RL Phase (edit model-path in run_nl.sh!)
+  cd VLM_PPO/scripts
+  bash run_nl.sh
+
+================================================================================
+END OF DOCUMENT
+================================================================================

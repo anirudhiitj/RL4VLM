@@ -1,0 +1,103 @@
+[2026-03-11 12:20:08,094] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.10/site-packages/deepspeed/runtime/zero/linear.py:49: FutureWarning: `torch.cuda.amp.custom_fwd(args...)` is deprecated. Please use `torch.amp.custom_fwd(args..., device_type='cuda')` instead.
+  def forward(ctx, input, weight, bias=None):
+/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.10/site-packages/deepspeed/runtime/zero/linear.py:67: FutureWarning: `torch.cuda.amp.custom_bwd(args...)` is deprecated. Please use `torch.amp.custom_bwd(args..., device_type='cuda')` instead.
+  def backward(ctx, grad_output):
+W0311 12:20:08.521000 294935 torch/distributed/run.py:852] 
+W0311 12:20:08.521000 294935 torch/distributed/run.py:852] *****************************************
+W0311 12:20:08.521000 294935 torch/distributed/run.py:852] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W0311 12:20:08.521000 294935 torch/distributed/run.py:852] *****************************************
+/home/rl_gaming/miniconda3/envs/rl4vlm_clean/bin/python3.10: can't open file '/mnt/raid/rl_gaming/RL4VLM/main.py': [Errno 2] No such file or directory
+/home/rl_gaming/miniconda3/envs/rl4vlm_clean/bin/python3.10: can't open file '/mnt/raid/rl_gaming/RL4VLM/main.py': [Errno 2] No such file or directory
+/home/rl_gaming/miniconda3/envs/rl4vlm_clean/bin/python3.10: can't open file '/mnt/raid/rl_gaming/RL4VLM/main.py': [Errno 2] No such file or directory
+/home/rl_gaming/miniconda3/envs/rl4vlm_clean/bin/python3.10: can't open file '/mnt/raid/rl_gaming/RL4VLM/main.py': [Errno 2] No such file or directory
+/home/rl_gaming/miniconda3/envs/rl4vlm_clean/bin/python3.10: can't open file '/mnt/raid/rl_gaming/RL4VLM/main.py': [Errno 2] No such file or directory
+/home/rl_gaming/miniconda3/envs/rl4vlm_clean/bin/python3.10: can't open file '/mnt/raid/rl_gaming/RL4VLM/main.py': [Errno 2] No such file or directory
+/home/rl_gaming/miniconda3/envs/rl4vlm_clean/bin/python3.10: can't open file '/mnt/raid/rl_gaming/RL4VLM/main.py': [Errno 2] No such file or directory
+/home/rl_gaming/miniconda3/envs/rl4vlm_clean/bin/python3.10: can't open file '/mnt/raid/rl_gaming/RL4VLM/main.py': [Errno 2] No such file or directory
+E0311 12:20:08.746000 294935 torch/distributed/elastic/multiprocessing/api.py:984] failed (exitcode: 2) local_rank: 0 (pid: 295140) of binary: /home/rl_gaming/miniconda3/envs/rl4vlm_clean/bin/python3.10
+[93m [WARNING] [0m async_io requires the dev libaio .so object and headers but these were not found.
+[93m [WARNING] [0m async_io: please install the libaio-dev package with apt
+[93m [WARNING] [0m If libaio is already installed (perhaps from source), try setting the CFLAGS and LDFLAGS environment variables to where it can be found.
+[93m [WARNING] [0m Please specify the CUTLASS repo directory as environment variable $CUTLASS_PATH
+[93m [WARNING] [0m sparse_attn requires a torch version >= 1.5 and < 2.0 but detected 2.10
+[93m [WARNING] [0m using untested triton version (3.6.0), only 1.0.0 is known to be compatible
+Traceback (most recent call last):
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/bin/accelerate", line 6, in <module>
+    sys.exit(main())
+  File "/home/rl_gaming/.local/lib/python3.10/site-packages/accelerate/commands/accelerate_cli.py", line 50, in main
+    args.func(args)
+  File "/home/rl_gaming/.local/lib/python3.10/site-packages/accelerate/commands/launch.py", line 1390, in launch_command
+    deepspeed_launcher(args)
+  File "/home/rl_gaming/.local/lib/python3.10/site-packages/accelerate/commands/launch.py", line 1076, in deepspeed_launcher
+    distrib_run.run(args)
+  File "/home/rl_gaming/.local/lib/python3.10/site-packages/torch/distributed/run.py", line 982, in run
+    elastic_launch(
+  File "/home/rl_gaming/.local/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 170, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/home/rl_gaming/.local/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 317, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+main.py FAILED
+------------------------------------------------------------
+Failures:
+[1]:
+  time      : 2026-03-11_12:20:08
+  host      : quasarH200.local
+  rank      : 1 (local_rank: 1)
+  exitcode  : 2 (pid: 295141)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+[2]:
+  time      : 2026-03-11_12:20:08
+  host      : quasarH200.local
+  rank      : 2 (local_rank: 2)
+  exitcode  : 2 (pid: 295142)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+[3]:
+  time      : 2026-03-11_12:20:08
+  host      : quasarH200.local
+  rank      : 3 (local_rank: 3)
+  exitcode  : 2 (pid: 295143)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+[4]:
+  time      : 2026-03-11_12:20:08
+  host      : quasarH200.local
+  rank      : 4 (local_rank: 4)
+  exitcode  : 2 (pid: 295144)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+[5]:
+  time      : 2026-03-11_12:20:08
+  host      : quasarH200.local
+  rank      : 5 (local_rank: 5)
+  exitcode  : 2 (pid: 295145)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+[6]:
+  time      : 2026-03-11_12:20:08
+  host      : quasarH200.local
+  rank      : 6 (local_rank: 6)
+  exitcode  : 2 (pid: 295146)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+[7]:
+  time      : 2026-03-11_12:20:08
+  host      : quasarH200.local
+  rank      : 7 (local_rank: 7)
+  exitcode  : 2 (pid: 295147)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-03-11_12:20:08
+  host      : quasarH200.local
+  rank      : 0 (local_rank: 0)
+  exitcode  : 2 (pid: 295140)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================

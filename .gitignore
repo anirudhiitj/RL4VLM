@@ -1,0 +1,11 @@
+data/
+points24.zip
+points24_images_test_v0/
+points24_unzipped/
+checkpoints/
+.vscode/
+sft_training.log
+training_monitor.log
+wandb/
+__pycache__/
+*.pyc
