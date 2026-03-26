@@ -1,6 +1,6 @@
 #!/bin/bash
-
-deepspeed --include localhost:0 \
+cd LLaVA
+deepspeed --include localhost:0,6 \
     llava/train/train_mem.py \
     --deepspeed ./scripts/zero3.json \
     --model_name_or_path liuhaotian/llava-v1.6-mistral-7b \
@@ -17,7 +17,7 @@ deepspeed --include localhost:0 \
     --bf16 True \
     --output_dir /mnt/raid/rl_gaming/RL4VLM/checkpoints/points24_sft_1epoch \
     --num_train_epochs 1 \
-    --per_device_train_batch_size 16 \
+    --per_device_train_batch_size 8 \
     --per_device_eval_batch_size 4 \
     --gradient_accumulation_steps 1 \
     --evaluation_strategy "no" \

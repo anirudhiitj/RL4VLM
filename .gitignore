@@ -5,7 +5,10 @@ points24_unzipped/
 checkpoints/
 .vscode/
 sft_training.log
+rl_training.log
 training_monitor.log
 wandb/
 __pycache__/
 *.pyc
+VLM_PPO/rl_logs/numberline_20260326_125058/
+VLM_PPO/rl_logs/numberline_20260326_125139/
