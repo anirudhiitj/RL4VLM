@@ -48,7 +48,6 @@ class PPO():
             data_generator = rollouts.feed_forward_generator(
                     advantages, self.mini_batch_size)
             for sample in data_generator:
-                with self.accelerator.accumulate(self.actor_critic):
                     grad_step += 1
                     obs_batch, output_ids_batch, actions_batch, \
                     value_preds_batch, return_batch, masks_batch, old_action_log_probs_batch, \

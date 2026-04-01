@@ -1,4 +1,4 @@
-TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES="0,1" accelerate launch --config_file config_zero2.yaml --main_process_port 29488 ../main.py \
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES="1,3" accelerate launch --config_file config_zero2.yaml --main_process_port 29488 ../main.py \
     --env-name gym_cards/NumberLine-v0 \
     --init-lr 1e-5 \
     --end-lr 1e-9 \
@@ -14,10 +14,7 @@ TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES="0,1" accelerate launch --conf
     --temperature 0.2 \
     --ppo-epoch 4 \
     --mini-batch-size 1 \
-    --model-path /your_sft_checkpoint_for_numberline \
+    --model-path /mnt/raid/rl_gaming/RL4VLM/checkpoints/sft_numberline \
     --use-lora \
     --train-vision all \
-    # --wandb-project you_wandb_proj \
-    # --wandb-run you_wandb_run \
-    # --use-wandb \
-    # --q4
+    --log-dir /mnt/raid/rl_gaming/RL4VLM/VLM_PPO/rl_logs/numberline_run

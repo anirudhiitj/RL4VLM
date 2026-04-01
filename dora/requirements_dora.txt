@@ -1,0 +1,11 @@
+# Requirements for DoRA branch
+# DoRA (Weight-Decomposed Low-Rank Adaptation) requires PEFT >= 0.9.0
+# Install: pip install -r requirements_dora.txt
+#
+# NOTE: Only upgrade PEFT. All other deps remain from the base rl4vlm-alf env.
+# If you want a separate env:
+#   conda create -n rl4vlm-dora --clone rl4vlm-alf
+#   conda activate rl4vlm-dora
+#   pip install -r requirements_dora.txt
+
+peft>=0.9.0

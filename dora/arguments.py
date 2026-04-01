@@ -194,6 +194,8 @@ def get_args():
     parser.add_argument("--wandb-run", type=str, default='test')
     parser.add_argument("--q4", default=False, action='store_true')
     parser.add_argument("--q8", default=False, action='store_true')
+    parser.add_argument("--use-dora", default=False, action='store_true',
+                        help='Use DoRA (Weight-Decomposed Low-Rank Adaptation) instead of LoRA')
     args = parser.parse_args()
 
 

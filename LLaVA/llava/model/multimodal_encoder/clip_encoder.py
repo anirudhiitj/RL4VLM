@@ -27,7 +27,20 @@ class CLIPVisionTower(nn.Module):
             return
 
         self.image_processor = CLIPImageProcessor.from_pretrained(self.vision_tower_name)
-        self.vision_tower = CLIPVisionModel.from_pretrained(self.vision_tower_name, device_map=device_map)
+        try:
+            self.vision_tower = CLIPVisionModel.from_pretrained(
+                self.vision_tower_name,
+                device_map=device_map,
+                low_cpu_mem_usage=False,
+            )
+        except RuntimeError as exc:
+            # Newer transformers/accelerate can raise on meta device contexts with device_map.
+            if "meta device context" not in str(exc):
+                raise
+            self.vision_tower = CLIPVisionModel.from_pretrained(
+                self.vision_tower_name,
+                low_cpu_mem_usage=False,
+            )
         self.vision_tower.requires_grad_(False)
 
         self.is_loaded = True

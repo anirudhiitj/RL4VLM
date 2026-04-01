@@ -56,19 +56,16 @@ def llava_evaluate(value_model, input_ids, output_ids, image_tensor, temperature
     input_token_len = inputs_embeds.shape[1] - output_ids.shape[1]
     hidden_states = outputs.hidden_states[-1][:, input_token_len-1]
     values = value_model.value_head(hidden_states)
-    scores = scores.to(torch.float64)
-
-    # Temperature-scaled log_probs for thought tokens (matches sampling distribution)
-    scores_scaled = scores * (1/temperature)
-    log_probs_scaled = torch.nn.functional.log_softmax(scores_scaled, dim=-1).to(torch.float32)
-
+    scores = scores * (1/temperature)
+    scores = scores.to(torch.float32)
+    log_probs = torch.nn.functional.log_softmax(scores, dim=-1)
+    log_probs = log_probs.to(torch.bfloat16)
     output_ids_mask = (output_ids != 0)[:, 1:]
-    selected_log_probs_scaled = output_ids_mask*torch.take_along_dim(log_probs_scaled[:, input_token_len:-1], output_ids[:,1:].unsqueeze(2), dim = 2).squeeze(2)
+    selected_log_probs = output_ids_mask*torch.take_along_dim(log_probs[:, input_token_len:-1], output_ids[:,1:].unsqueeze(2), dim = 2).squeeze(2)
     unfolded = output_ids.unfold(dimension=-1, size=3, step=1)
-    # tokens for '"action":' — ID 345 is " after space/start, ID 28739 is " after newline
-    target1 = torch.tensor([345,1774,1264]).to(base.device)
-    target2 = torch.tensor([28739,1774,1264]).to(base.device)
-    matches = (unfolded == target1).all(dim=-1) | (unfolded == target2).all(dim=-1)
+    target = torch.tensor([345,1774,1264]).to(base.device)
+    # tokens for text string:'"action":' (torch.tensor([[345,1774,1264]]))
+    matches = (unfolded == target).all(dim = -1)
     match_index = matches.nonzero(as_tuple=True)[-1]
     if match_index.shape[0] >= 1:
         match_index = match_index[-1].unsqueeze(0)
@@ -80,25 +77,7 @@ def llava_evaluate(value_model, input_ids, output_ids, image_tensor, temperature
             action_tokens_log_prob = torch.tensor([-1]).to(base.device)
             return values, sum_log_prob, action_tokens_log_prob
     ## omitting the second token for calculating log prob, because its logprb is very very small
-    mi = match_index.item()
-    thought_log_prob = torch.sum(selected_log_probs_scaled[:,1:mi-1], dim = 1)
-
-    # Binary action log_prob: the +/- decision happens at output_ids[:, mi+3]
-    # Token 345 ('"') → action is + (next token will be '+"')
-    # Token 11645 ('"-') → action is -
-    PLUS_FIRST = 345
-    MINUS_MERGED = 11645
-    action_score_pos = input_token_len + mi + 2  # scores position predicting output[mi+3]
-    binary_logits = scores[:, action_score_pos, :][:, [PLUS_FIRST, MINUS_MERGED]]
-    # Soft temperature: divide by 20 to get meaningful log_probs from extreme logit gaps.
-    # Unlike clamp, this preserves gradients so PPO can actually update the action distribution.
-    ACTION_TEMPERATURE = 20.0
-    binary_lp = torch.nn.functional.log_softmax(binary_logits / ACTION_TEMPERATURE, dim=-1).float()
-    actual = output_ids[0, mi + 3].item()
-    if actual == MINUS_MERGED:
-        action_tokens_log_prob = binary_lp[:, 1]
-    else:
-        action_tokens_log_prob = binary_lp[:, 0]
-
+    thought_log_prob = torch.sum(selected_log_probs[:,1:match_index-1], dim = 1)
+    action_tokens_log_prob = torch.sum(selected_log_probs[:,match_index-1:], dim = 1)
     sum_log_prob = thought_prob_coef*thought_log_prob + action_tokens_log_prob
     return values, sum_log_prob, action_tokens_log_prob

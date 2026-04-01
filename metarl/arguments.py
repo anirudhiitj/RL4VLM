@@ -184,6 +184,17 @@ def get_args():
     # Argments for supporting alf config file
     parser.add_argument("--alf_config", type=str, default=None)
 
+    # Meta-RL arguments
+    parser.add_argument("--meta-lr", type=float, default=1e-4,
+                        help='Meta-learning rate (beta) for Reptile outer loop')
+    parser.add_argument("--inner-steps", type=int, default=5,
+                        help='Number of PPO update steps per inner loop (K)')
+    parser.add_argument("--meta-batch-size", type=int, default=3,
+                        help='Number of tasks per meta-batch (N)')
+    parser.add_argument("--meta-strategy", type=str, default="reptile",
+                        choices=["reptile", "fomaml"],
+                        help='Meta-learning strategy')
+
     # arguments for logging
     parser.add_argument("--log-dir", type=str, default=None,
                         help='directory for saving training logs, metrics, and checkpoints')

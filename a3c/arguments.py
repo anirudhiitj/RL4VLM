@@ -184,6 +184,14 @@ def get_args():
     # Argments for supporting alf config file
     parser.add_argument("--alf_config", type=str, default=None)
 
+    # A3C arguments
+    parser.add_argument("--num-workers", type=int, default=4,
+                        help='Number of async A3C workers (each with own env)')
+    parser.add_argument("--a3c-n-step", type=int, default=5,
+                        help='N-step return horizon for A3C workers')
+    parser.add_argument("--a3c-entropy-coef", type=float, default=0.01,
+                        help='Entropy bonus coefficient for A3C')
+
     # arguments for logging
     parser.add_argument("--log-dir", type=str, default=None,
                         help='directory for saving training logs, metrics, and checkpoints')

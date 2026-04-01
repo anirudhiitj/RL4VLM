@@ -1,12 +1,12 @@
 #!/bin/bash
-
-deepspeed --include localhost:0,1,2,3 \
+cd LLaVA
+deepspeed --include localhost:0,6 \
     llava/train/train_mem.py \
     --deepspeed ./scripts/zero3.json \
     --model_name_or_path liuhaotian/llava-v1.6-mistral-7b \
     --version v1 \
-    --data_path /path_to_json_file \
-    --image_folder /path_to_image_file \
+    --data_path /mnt/raid/rl_gaming/RL4VLM/data/points24.json \
+    --image_folder /mnt/raid/rl_gaming/RL4VLM/data/points24_images_test_v0 \
     --vision_tower openai/clip-vit-large-patch14-336 \
     --mm_projector_type mlp2x_gelu \
     --mm_vision_select_layer -2 \
@@ -15,12 +15,13 @@ deepspeed --include localhost:0,1,2,3 \
     --image_aspect_ratio pad \
     --group_by_modality_length True \
     --bf16 True \
-    --output_dir /path_to_your_saved_json \
+    --output_dir /mnt/raid/rl_gaming/RL4VLM/checkpoints/points24_sft_1epoch \
     --num_train_epochs 1 \
-    --per_device_train_batch_size 16 \
+    --per_device_train_batch_size 8 \
     --per_device_eval_batch_size 4 \
     --gradient_accumulation_steps 1 \
     --evaluation_strategy "no" \
+    --report_to none \
     --save_strategy "steps" \
     --save_steps 50000 \
     --save_total_limit 1 \

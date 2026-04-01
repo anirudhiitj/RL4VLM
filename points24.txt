@@ -1,0 +1,220 @@
+================================================================================
+             POINTS24 GAME - COMPLETE GUIDE (RL4VLM PROJECT)
+       Fine-Tuning Large Vision-Language Models as Decision-Making
+                 Agents via Reinforcement Learning
+================================================================================
+
+Paper:    https://arxiv.org/abs/2405.10292
+Data:     https://huggingface.co/LEVI-Project/sft-data
+Model:    https://huggingface.co/liuhaotian/llava-v1.6-mistral-7b
+Venue:    NeurIPS 2024
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+  1.  WHAT IS THE POINTS24 GAME?
+  2.  HOW THE ENVIRONMENT WORKS (CODE-LEVEL)
+  3.  THE FULL TRAINING PIPELINE OVERVIEW
+  4.  PHASE 1: SUPERVISED FINE-TUNING (SFT)
+  5.  PHASE 2: RL TRAINING (PPO)
+  6.  ALL FILES INVOLVED AND WHAT THEY DO
+  7.  COMMON ISSUES AND TROUBLESHOOTING
+
+================================================================================
+1. WHAT IS THE POINTS24 GAME?
+================================================================================
+
+Points24 (also known as the 24 Game) is an arithmetic card game environment in 
+the gym_cards suite of the RL4VLM project. It serves as a more complex reasoning
+and planning environment compared to NumberLine, requiring the VLM to perform 
+multi-step combinatorial search and arithmetic calculations.
+
+THE GAME:
+  - At the start of each episode, 4 random playing cards are drawn.
+  - The agent sees an IMAGE (300x300 RGB) showing:
+      The 4 standard playing cards laid out on a green background.
+      The current text string: "Formula: [current expression]" at the bottom.
+  - The agent must choose ONE valid action (number or operator) per step to 
+    build a mathematical formula.
+  - The actions available (assuming face cards equal 10) are:
+      Numbers: '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'
+      Operators: '+', '-', '*', '/', '(', ')', '='
+  - Goal: Use all 4 cards exactly once and construct a mathematical formula 
+    that evaluates to 24. End the sequence by outputting '='.
+  - The episode terminates when '=' is output (and the formula is evaluated), 
+    or when the formula length exceeds 20 steps (truncation).
+
+WHY THIS TASK MATTERS:
+  - Tests MULTI-STEP REASONING: The agent must plan a full mathematical 
+    equation and execute it step-by-step.
+  - Tests SYMBOLIC GROUNDING: The agent must correctly identify the card values 
+    from their images and map them to available number actions.
+  - Tests ARITHMETIC: Requires the model to compute combinations correctly and 
+    understand operations like parentheses and order of operations.
+
+PAPER CONTEXT:
+  - In the paper, Points24 highlights the VLM's ability to maintain a coherent
+    chain-of-thought (CoT) over a long horizon.
+  - SFT+RL training with CoT drastically outperforms SFT alone or RL without CoT,
+    as formulating 24 mathematically relies heavily on continuous logical steps.
+
+================================================================================
+2. HOW THE ENVIRONMENT WORKS (CODE-LEVEL)
+================================================================================
+
+FILE: gym-cards/gym_cards/envs/points.py
+CLASS: Point24Env(gym.Env)
+
+INITIALIZATION (__init__):
+  - target_points = 24
+  - treat_face_cards_as_10 = True (by default, J/Q/K count as 10)
+  - action_space = Discrete(17) 
+      -> 10 numbers (1-10) + 7 operators (+, -, *, /, (, ), =)
+  - observation_space = Box(0, 255, shape=(300,300,3), dtype=uint8)
+
+RESET (reset):
+  - Randomly draws 4 cards (1-13). If treat_face_cards_as_10 is True, caps max
+    value at 10.
+  - Resets the `self.formula` and `self.used_cards` arrays to empty.
+  - Returns: (observation_image, info_dict)
+  - info = {"Cards": [card_strings], "Numbers": [card_values], "Formula": []}
+
+STEP (step):
+  - Map the integer `action` to its string representation (e.g. 0 -> '1', 10 -> '+').
+  - TRUNCATION CHECK: If len(formula) > 20, terminate with reward -1.
+  - VALIDITY CHECK: 
+      - If action is a number, it checks if that number has been used more times 
+        than it appears in the 4 drawn cards. If invalid, concatenates a space 
+        (" ") to formula and returns reward = -1 (not terminated).
+  - EQUAL SIGN: If action == '=', it triggers formula evaluation.
+      - Uses Python's `eval()` on the string.
+      - If eval(formula) == 24 AND len(used_cards) == 4: reward = 10, done = True
+      - Else (e.g., SyntaxError, wrong value, or not all cards used): 
+        reward = -1, done = True
+  - Otherwise, appends the chosen valid action to `self.formula`.
+  - Returns: (observation, reward, done, truncate, info)
+
+OBSERVATION (_get_observation):
+  - Creates a 300x300 RGB Image (background color '#35654d' - dark green).
+  - Pastes the 4 card images side by side horizontally.
+  - Draws "Formula:" and the current equation string using DejaVuSans font
+    at the bottom of the canvas.
+  - Converts to numpy uint8 array.
+
+REGISTRATION:
+  - Registered as id='gym_cards/Points24-v0' in `gym_cards/__init__.py`
+  - max_episode_steps = 300
+
+================================================================================
+3. THE FULL TRAINING PIPELINE OVERVIEW
+================================================================================
+
+Similar to NumberLine, the pipeline involves:
+  1. Base Model Checkpoint: liuhaotian/llava-v1.6-mistral-7b
+  2. Phase 1: Supervised Fine-Tuning (SFT) 
+     - Teaches the model the structure of the Point24 game, how to produce CoT,
+       and optimal trajectories collected by a solver.
+  3. Phase 2: RL Fine-Tuning (PPO)
+     - Interacts with Points24Env, receives +10 for solving the game, and 
+       updates adapter weights using PPO. 
+     - Uses `run_p24.sh`.
+
+================================================================================
+4. PHASE 1: SUPERVISED FINE-TUNING (SFT)
+================================================================================
+
+Data format for SFT on Points24 (from Hugging Face LEVI-Project/sft-data):
+
+  An SFT conversation looks like:
+  {
+    "from": "human",
+    "value": "<image>\nYou are an expert 24 points card game player. You are observing thee four cards in the image. You are observing the current formula: ... [rules omitted] ...\nYour response should be a valid json file in the following format: {\n \"cards\": [x, y, z, w], \n\"current formula\": ..., \n\"thoughts\": ..., \n\"action\": \"{number}\" or \"{operator}\" \n }"
+  }
+  {
+    "from": "gpt",
+    "value": "{\n\"cards\": [4, 6, 8, 8],\n\"current formula\": 6 * 4,\n\"thoughts\": {First check whether the current formula equals 24...},\n\"action\": \"+\"\n}"
+  }
+
+To run SFT, edit `finetune.sh` points to the point24 instruction JSON data and 
+images, then execute the script on a multi-GPU setup.
+
+================================================================================
+5. PHASE 2: RL TRAINING (PPO)
+================================================================================
+
+For Points24, RL training is highly dependent on discovering valid sequences in 
+the massive combinatorial space.
+
+THE PROMPT (rl_utils.py -> get_prompt)
+--------------------------------------
+The VLM receives the <image> token along with structured rules explaining the 
+operators allowed, the note that J/Q/K count as 10, and instructions to format
+the response exactly as JSON containing its intermediate "thoughts" and "action".
+
+TEXT PARSING (rl_utils.py -> text_projection)
+---------------------------------------------
+- Action string looks for an exact match within the 17 allowed choices.
+- CRITICAL FIX: Since '10' contains '1', the parser checks if '10' is in the 
+  action substring. If so, it counts '10' and temporarily replaces '10' with '' 
+  so that it doesn't accidentally trigger the action '1' as well.
+- If the model outputs zero or multiple valid actions, it defaults to a random 
+  action between 0-16 for exploration and robust training.
+
+REWARD SIGNAL (points.py)
+-------------------------
+- +10 for achieving eval() == 24 using all 4 cards (SUCCESS).
+- -1 for invalid math syntax, wrong eval target, or attempting to use a card 
+  more times than it exists.
+- 0 for intermediate valid steps building the formula.
+
+THE RL TRAINING SCRIPT (run_p24.sh)
+-----------------------------------
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES="0,1" accelerate launch \
+    --config_file config_zero2.yaml --main_process_port 29380 ../main.py \
+    --env-name gym_cards/Points24-v0 \
+    --init-lr 1e-5 \
+    --end-lr 1e-9 \
+    --lr_max_steps 25 \
+    --eval-num-per-episode 200 \
+    --num-env-steps 15000 \
+    --num-steps 1024 \          <-- Larger rollout size than NumberLine
+    --grad-accum-steps 128 \
+    --max-new-tokens 256 \
+    --thought-prob-coef 0.5 \   <-- The crucial lambda scaling for CoT log-probs!
+    --use-gae \                 <-- Generalized Advantage Estimation
+    --ppo-epoch 4 \
+    --model-path /your_sft_checkpoint_for_points24 \
+    --use-lora \
+    --train-vision all
+
+Difference from NumberLine: `--num-steps` is 1024 (NumberLine was 512). Since
+Point24 requires a longer formula construction (e.g. `( 6 + 2 ) * ( 9 / 3 ) =`), 
+a larger rollout buffer is preferred to gather sufficient complete episodes before 
+a PPO update.
+
+================================================================================
+6. ALL FILES INVOLVED AND WHAT THEY DO
+================================================================================
+
+- gym-cards/gym_cards/envs/points.py: Core environment logic (rules, rewards, img generation)
+- gym-cards/gym_cards/__init__.py: Gym registration for `gym_cards/Points24-v0`
+- VLM_PPO/scripts/run_p24.sh: Main bash script to launch Point24 RL training
+- VLM_PPO/a2c_ppo_acktr/rl_utils.py: Houses the get_prompt() and text_projection()
+  functions dictating how the model sees the environment state and how its textual
+  JSON output is translated back into Point24 discrete actions.
+- VLM_PPO/main.py: The PPO loop tying it all together.
+
+================================================================================
+7. COMMON ISSUES AND TROUBLESHOOTING
+================================================================================
+
+- TOKENIZER HARD-CODING: As noted in the repo's README, the token IDs encoding
+  the string '"action":' are hard-coded in `a2c_ppo_acktr/llava_interface/interface.py`.
+  If you are not using Mistral, your VLM will fail to split log probabilities 
+  correctly. Check tokenizer output for your model.
+- REWARD SPARSITY: Since the only positive reward (+10) is given strictly at 
+  the very end, Points24 operates heavily on sparse rewards compared to NumberLine.
+  Ensure `--eval-num-per-episode` is large enough to get a smoothed measure of performance.
+- OUT OF MEMORY (OOM): Points24 prompts tend to be longer due to observing the 
+  growing mathematical formula and producing longer CoT. If you encounter OOM, 
+  reduce batch size or increase `gradient_accumulation_steps`.

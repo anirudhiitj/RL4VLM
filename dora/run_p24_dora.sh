@@ -1,4 +1,12 @@
-TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES="0" accelerate launch --config_file config_zero2.yaml --main_process_port 29381 ../main.py \
+#!/bin/bash
+# DoRA RL training for Points24
+# Uses Weight-Decomposed Low-Rank Adaptation instead of standard LoRA
+# Requires: peft>=0.9.0 (pip install -r requirements_dora.txt)
+
+TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES="0" accelerate launch \
+    --config_file config_zero2.yaml \
+    --main_process_port 29381 \
+    ../main.py \
     --env-name gym_cards/Points24-v0 \
     --init-lr 1e-5 \
     --end-lr 1e-9 \
@@ -16,8 +24,6 @@ TOKENIZERS_PARALLELISM=false CUDA_VISIBLE_DEVICES="0" accelerate launch --config
     --mini-batch-size 1 \
     --model-path /mnt/raid/rl_gaming/RL4VLM/checkpoints/points24_sft_1epoch \
     --use-lora \
+    --use-dora \
     --train-vision all \
-    # --wandb-project you_wandb_proj \
-    # --wandb-run you_wandb_run \
-    # --use-wandb \
-    # --q4
+    --log-dir ../rl_logs/points24_dora

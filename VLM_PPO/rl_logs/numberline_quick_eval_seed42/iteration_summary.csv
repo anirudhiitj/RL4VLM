@@ -1,0 +1,3 @@
+iteration,timesteps,fps,elapsed_time_min,mean_reward,median_reward,min_reward,max_reward,success_rate,value_loss,action_loss,learning_rate,mean_action_tokens_log_prob,reward_rollout_mean,reward_rollout_std,return_mean,return_std,value_pred_mean,value_pred_std,timestamp
+0,128,0,5.18,-2.087,-1.0,-8.0,1.0,0.4348,2.104398,-0.0,0.0,0.0,-0.3828,0.6887,-1.2999,1.5546,0.0327,0.0035,2026-03-19T23:05:48.705850
+

@@ -1,16 +1,14 @@
-# Hugging Face cache and local data
-.cache/huggingface/
-**/.cache/huggingface/
-.huggingface/
-**/.huggingface/
-hf_home/
-
-# Local datasets
 data/
-data/sft-data/
-
-# Training artifacts
+points24.zip
+points24_images_test_v0/
+points24_unzipped/
 checkpoints/
-
-# Archives
-*.zip
+.vscode/
+sft_training.log
+rl_training.log
+training_monitor.log
+wandb/
+__pycache__/
+*.pyc
+VLM_PPO/rl_logs/numberline_20260326_125058/
+VLM_PPO/rl_logs/numberline_20260326_125139/
