@@ -10,5 +10,17 @@ training_monitor.log
 wandb/
 __pycache__/
 *.pyc
-VLM_PPO/rl_logs/numberline_20260326_125058/
-VLM_PPO/rl_logs/numberline_20260326_125139/
+*.egg-info/
+*.safetensors
+*.bin
+*.pt
+
+# Large log files
+*.jsonl
+VLM_PPO/rl_logs/
+rl_logs/
+
+# Temp/editor files
+*.txt~
+*.swp
+*.swo
