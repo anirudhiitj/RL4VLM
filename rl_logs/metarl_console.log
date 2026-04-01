@@ -1,0 +1,240 @@
+==========================================
+  Meta-RL (Reptile+PPO) Training - Points24
+  GPU: 7 | Env: rl4vlm_clean
+  Worktree: /mnt/raid/rl_gaming/RL4VLM_metarl
+  Log dir: /mnt/raid/rl_gaming/RL4VLM_metarl/VLM_PPO/rl_logs/points24_metarl
+  Start: Wed Apr  1 01:52:54 AM IST 2026
+==========================================
+using xformers
+Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+Users of this version of Gym should be able to simply replace 'import gym' with 'import gymnasium as gym' in the vast majority of cases.
+See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+/mnt/raid/rl_gaming/RL4VLM_metarl/VLM_PPO/a2c_ppo_acktr/rl_utils.py:37: SyntaxWarning: invalid escape sequence '\{'
+  qs = qs + "Your response should be a valid json file in the following format: \{\n"
+/mnt/raid/rl_gaming/RL4VLM_metarl/VLM_PPO/a2c_ppo_acktr/rl_utils.py:44: SyntaxWarning: invalid escape sequence '\}'
+  qs = qs + "\"action\": \"{number}\" or \"{operator}\" \n \}"
+/mnt/raid/rl_gaming/RL4VLM_metarl/VLM_PPO/a2c_ppo_acktr/rl_utils.py:56: SyntaxWarning: invalid escape sequence '\{'
+  qs = qs + "Your response should be a valid json file in the following format: \{\n"
+/mnt/raid/rl_gaming/RL4VLM_metarl/VLM_PPO/a2c_ppo_acktr/rl_utils.py:63: SyntaxWarning: invalid escape sequence '\}'
+  qs = qs + "\"action\": \"{number}\" or \"{operator}\" \n \}"
+/mnt/raid/rl_gaming/RL4VLM_metarl/VLM_PPO/a2c_ppo_acktr/arguments.py:167: SyntaxWarning: invalid escape sequence '\{'
+  parser.add_argument("--prompt", type=str, default="What is the next action? Please format your response as 'The next action is \{response\}.'")
+================================================================================
+  Meta-RL (Reptile + PPO) Training for Points24
+  Log directory: ../rl_logs/points24_metarl
+  Start time: 2026-04-01T01:53:02.008005
+================================================================================
+Model path: /mnt/raid/rl_gaming/RL4VLM/checkpoints/points24_sft_1epoch
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:05<00:16,  5.53s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:11<00:11,  5.69s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:16<00:05,  5.64s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:17<00:00,  3.58s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:17<00:00,  4.34s/it]
+Some weights of the model checkpoint at /mnt/raid/rl_gaming/RL4VLM/checkpoints/points24_sft_1epoch were not used when initializing LlavaLlamaForCausalLM: ['model.image_newline']
+- This IS expected if you are initializing LlavaLlamaForCausalLM from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing LlavaLlamaForCausalLM from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+['o_proj', 'v_proj', 'out_proj', 'down_proj', 'fc1', 'fc2', 'mm_projector.2', 'mm_projector.0', 'gate_proj', 'q_proj', 'up_proj', 'k_proj']
+Prompt:
+A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions. USER: <image>
+You are an expert 24 points card game player. You are observing thee four cards in the image. You are observing the current formula: . You can choose between ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '+', '-', '*', '/', '(', ')', '=']. The number or operator you choose will be appended to the current formula. Note that 'J', 'Q', and 'K' count as '10'. Your goal is to output a formula that evaluates to 24, and each number can only be used once. Your response should be a valid json file in the following format: \{
+ "cards": [x, y, z, w], 
+"current formula": , 
+"thoughts": {First check whether the current formula equals 24. If the current formula equals 24, output '='. Otherwise consider which number or operator should be appended to the current formula to make it equal 24.} 
+"action": "{number}" or "{operator}" 
+ \} ASSISTANT:
+Pre-computing solvable card configurations per difficulty tier...
+  easy: 53 solvable combos cached
+  medium: 273 solvable combos cached
+  hard: 300 solvable combos cached
+
+================================================================================
+  Meta-RL Configuration
+  Strategy: reptile
+  Meta LR (beta): 0.0001
+  Inner steps (K): 5
+  Meta batch size (N tasks): 3
+  Total meta updates: 9
+  Steps per rollout: 512
+  PPO epochs per inner step: 4
+================================================================================
+
+Meta-RL Training:   0%|                                                                           | 0/9 [00:00<?, ?it/s]
+============================================================
+  META-ITERATION 0/9
+============================================================
+  Task 0: tier=easy, cards=(3, 3, 3, 5)
+  Task 1: tier=medium, cards=(2, 4, 6, 6)
+  Task 2: tier=hard, cards=(6, 8, 8, 10)
+Meta-RL Training:   0%|                                                                         | 0/9 [1:27:10<?, ?it/s]
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/mnt/raid/rl_gaming/RL4VLM_metarl/VLM_PPO/scripts/../main_metarl.py", line 521, in <module>
+[rank0]:     main()
+[rank0]:     ~~~~^^
+[rank0]:   File "/mnt/raid/rl_gaming/RL4VLM_metarl/VLM_PPO/scripts/../main_metarl.py", line 450, in main
+[rank0]:     meta_metrics = meta_agent.meta_step(task_rollouts_list)
+[rank0]:   File "/mnt/raid/rl_gaming/RL4VLM_metarl/VLM_PPO/a2c_ppo_acktr/algo/meta_ppo.py", line 148, in meta_step
+[rank0]:     optimizer_state_backup = copy.deepcopy(optimizer.state_dict())
+[rank0]:   File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/copy.py", line 137, in deepcopy
+[rank0]:     y = copier(x, memo)
+[rank0]:   File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/copy.py", line 222, in _deepcopy_dict
+[rank0]:     y[deepcopy(key, memo)] = deepcopy(value, memo)
+[rank0]:                              ~~~~~~~~^^^^^^^^^^^^^
+[rank0]:   File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/copy.py", line 137, in deepcopy
+[rank0]:     y = copier(x, memo)
+[rank0]:   File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/copy.py", line 197, in _deepcopy_list
+[rank0]:     append(deepcopy(a, memo))
+[rank0]:            ~~~~~~~~^^^^^^^^^
+[rank0]:   File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/copy.py", line 144, in deepcopy
+[rank0]:     y = copier(memo)
+[rank0]:   File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/torch/_tensor.py", line 145, in __deepcopy__
+[rank0]:     raise RuntimeError(
+[rank0]:     ...<5 lines>...
+[rank0]:     )
+[rank0]: RuntimeError: Only Tensors created explicitly by the user (graph leaves) support the deepcopy protocol at the moment.  If you were attempting to deepcopy a module, this may be because of a torch.nn.utils.weight_norm usage, see https://github.com/pytorch/pytorch/pull/103001
+E0401 03:20:47.007000 1464418 site-packages/torch/distributed/elastic/multiprocessing/api.py:984] failed (exitcode: 1) local_rank: 0 (pid: 1467767) of binary: /home/rl_gaming/miniconda3/envs/rl4vlm_clean/bin/python3.13
+Traceback (most recent call last):
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/bin/accelerate", line 8, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/accelerate/commands/accelerate_cli.py", line 50, in main
+    args.func(args)
+    ~~~~~~~~~^^^^^^
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/accelerate/commands/launch.py", line 1390, in launch_command
+    deepspeed_launcher(args)
+    ~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/accelerate/commands/launch.py", line 1076, in deepspeed_launcher
+    distrib_run.run(args)
+    ~~~~~~~~~~~~~~~^^^^^^
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/torch/distributed/run.py", line 982, in run
+    elastic_launch(
+    ~~~~~~~~~~~~~~~
+        config=config,
+        ~~~~~~~~~~~~~~
+        entrypoint=cmd,
+        ~~~~~~~~~~~~~~~
+    )(*cmd_args)
+    ~^^^^^^^^^^^
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/torch/distributed/launcher/api.py", line 170, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/torch/distributed/launcher/api.py", line 317, in launch_agent
+    raise ChildFailedError(
+    ...<2 lines>...
+    )
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+../main_metarl.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-04-01_03:20:47
+  host      : quasarH200.local
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 1467767)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+==========================================
+  Meta-RL (Reptile+PPO) Training - Points24
+  GPU: 7 | Env: rl4vlm_clean
+  Worktree: /mnt/raid/rl_gaming/RL4VLM_metarl
+  Log dir: /mnt/raid/rl_gaming/RL4VLM_metarl/VLM_PPO/rl_logs/points24_metarl
+  Start: Wed Apr  1 11:01:17 AM IST 2026
+==========================================
+using xformers
+Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+Users of this version of Gym should be able to simply replace 'import gym' with 'import gymnasium as gym' in the vast majority of cases.
+See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+================================================================================
+  Meta-RL (Reptile + PPO) Training for Points24
+  Log directory: ../rl_logs/points24_metarl
+  Start time: 2026-04-01T11:01:24.163069
+================================================================================
+Model path: /mnt/raid/rl_gaming/RL4VLM/checkpoints/points24_sft_1epoch
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:05<00:16,  5.41s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:11<00:11,  5.64s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:16<00:05,  5.53s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:17<00:00,  3.51s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:17<00:00,  4.26s/it]
+Some weights of the model checkpoint at /mnt/raid/rl_gaming/RL4VLM/checkpoints/points24_sft_1epoch were not used when initializing LlavaLlamaForCausalLM: ['model.image_newline']
+- This IS expected if you are initializing LlavaLlamaForCausalLM from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing LlavaLlamaForCausalLM from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+['down_proj', 'q_proj', 'up_proj', 'fc2', 'mm_projector.0', 'mm_projector.2', 'gate_proj', 'k_proj', 'v_proj', 'fc1', 'out_proj', 'o_proj']
+Prompt:
+A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions. USER: <image>
+You are an expert 24 points card game player. You are observing thee four cards in the image. You are observing the current formula: . You can choose between ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '+', '-', '*', '/', '(', ')', '=']. The number or operator you choose will be appended to the current formula. Note that 'J', 'Q', and 'K' count as '10'. Your goal is to output a formula that evaluates to 24, and each number can only be used once. Your response should be a valid json file in the following format: \{
+ "cards": [x, y, z, w], 
+"current formula": , 
+"thoughts": {First check whether the current formula equals 24. If the current formula equals 24, output '='. Otherwise consider which number or operator should be appended to the current formula to make it equal 24.} 
+"action": "{number}" or "{operator}" 
+ \} ASSISTANT:
+Pre-computing solvable card configurations per difficulty tier...
+  easy: 53 solvable combos cached
+  medium: 273 solvable combos cached
+  hard: 300 solvable combos cached
+
+================================================================================
+  Meta-RL Configuration
+  Strategy: reptile
+  Meta LR (beta): 0.0001
+  Inner steps (K): 5
+  Meta batch size (N tasks): 3
+  Total meta updates: 9
+  Steps per rollout: 512
+  PPO epochs per inner step: 4
+================================================================================
+
+Meta-RL Training:   0%|                                                                           | 0/9 [00:00<?, ?it/s]
+============================================================
+  META-ITERATION 0/9
+============================================================
+  Task 0: tier=easy, cards=(3, 3, 3, 5)
+  Task 1: tier=medium, cards=(2, 4, 6, 6)
+  Task 2: tier=hard, cards=(6, 8, 8, 10)
+
+  METRICS (Meta-Iter 0)
+  Timesteps: 1536 | FPS: 0 | Elapsed: 134.9 min
+  Reward mean: -14.232 | Success Rate: 0.0244 (2.4%)
+  Meta inner value_loss: 8.808069
+  Meta inner action_loss: 0.339009
+Meta-RL Training:   0%|                                                                         | 0/9 [2:14:54<?, ?it/s]Meta-RL Training:  11%|██████▋                                                     | 1/9 [2:14:54<17:59:14, 8094.26s/it]
+============================================================
+  META-ITERATION 1/9
+============================================================
+  Task 0: tier=easy, cards=(1, 4, 4, 4)
+  Task 1: tier=medium, cards=(5, 6, 6, 6)
+  Task 2: tier=hard, cards=(5, 6, 6, 6)
+W0401 14:31:45.034000 1740890 site-packages/torch/distributed/elastic/agent/server/api.py:739] Received 15 death signal, shutting down workers
+W0401 14:31:45.036000 1740890 site-packages/torch/distributed/elastic/multiprocessing/api.py:1010] Sending process 1741025 closing signal SIGTERM
+Traceback (most recent call last):
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/bin/accelerate", line 8, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/accelerate/commands/accelerate_cli.py", line 50, in main
+    args.func(args)
+    ~~~~~~~~~^^^^^^
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/accelerate/commands/launch.py", line 1390, in launch_command
+    deepspeed_launcher(args)
+    ~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/accelerate/commands/launch.py", line 1076, in deepspeed_launcher
+    distrib_run.run(args)
+    ~~~~~~~~~~~~~~~^^^^^^
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/torch/distributed/run.py", line 982, in run
+    elastic_launch(
+    ~~~~~~~~~~~~~~~
+        config=config,
+        ~~~~~~~~~~~~~~
+        entrypoint=cmd,
+        ~~~~~~~~~~~~~~~
+    )(*cmd_args)
+    ~^^^^^^^^^^^
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/torch/distributed/launcher/api.py", line 170, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/torch/distributed/launcher/api.py", line 308, in launch_agent
+    result = agent.run()
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/torch/distributed/elastic/metrics/api.py", line 134, in wrapper
+    result = f(*args, **kwargs)
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/torch/distributed/elastic/agent/server/api.py", line 731, in run
+    result = self._invoke_run(role)
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/torch/distributed/elastic/agent/server/api.py", line 908, in _invoke_run
+    time.sleep(monitor_interval)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 86, in _terminate_process_handler
+    raise SignalException(f"Process {os.getpid()} got signal: {sigval}", sigval=sigval)
+torch.distributed.elastic.multiprocessing.api.SignalException: Process 1740890 got signal: 15

@@ -1,0 +1,1212 @@
+=== Training Monitor Started at Wed Mar 11 01:57:46 AM IST 2026 ===
+Checking every 5 minutes...
+
+===============================================
+Timestamp: Wed Mar 11 01:57:46 AM IST 2026
+Status: RUNNING | Elapsed: 03:20:57 | CPU: 99.8% | RAM: 5.2GB
+GPU Status:
+0, 45772 MiB, 143771 MiB, 63 %, 41
+1, 40747 MiB, 143771 MiB, 39 %, 33
+Worker threads: 14
+Context switches: voluntary=30403
+47607 nonvoluntary=47607
+
+===============================================
+Timestamp: Wed Mar 11 02:02:46 AM IST 2026
+Status: RUNNING | Elapsed: 03:25:58 | CPU: 99.8% | RAM: 5.2GB
+GPU Status:
+0, 45772 MiB, 143771 MiB, 42 %, 37
+1, 40747 MiB, 143771 MiB, 40 %, 32
+Worker threads: 14
+Context switches: voluntary=30482
+48081 nonvoluntary=48081
+
+===============================================
+Timestamp: Wed Mar 11 02:07:47 AM IST 2026
+Status: RUNNING | Elapsed: 03:30:58 | CPU: 99.8% | RAM: 5.2GB
+GPU Status:
+0, 45772 MiB, 143771 MiB, 41 %, 38
+1, 40747 MiB, 143771 MiB, 42 %, 32
+Worker threads: 14
+Context switches: voluntary=30540
+48537 nonvoluntary=48537
+
+===============================================
+Timestamp: Wed Mar 11 02:12:47 AM IST 2026
+Status: RUNNING | Elapsed: 03:35:58 | CPU: 99.8% | RAM: 5.2GB
+GPU Status:
+0, 45772 MiB, 143771 MiB, 72 %, 52
+1, 40747 MiB, 143771 MiB, 56 %, 44
+Worker threads: 14
+Context switches: voluntary=31360
+49388 nonvoluntary=49389
+
+===============================================
+Timestamp: Wed Mar 11 02:17:47 AM IST 2026
+Status: RUNNING | Elapsed: 03:40:59 | CPU: 99.8% | RAM: 5.2GB
+GPU Status:
+0, 45772 MiB, 143771 MiB, 62 %, 57
+1, 40747 MiB, 143771 MiB, 89 %, 44
+Worker threads: 14
+Context switches: voluntary=32977
+51152 nonvoluntary=51152
+
+===============================================
+Timestamp: Wed Mar 11 02:22:48 AM IST 2026
+Status: RUNNING | Elapsed: 03:45:59 | CPU: 99.8% | RAM: 5.2GB
+GPU Status:
+0, 45772 MiB, 143771 MiB, 41 %, 38
+1, 40747 MiB, 143771 MiB, 62 %, 33
+Worker threads: 14
+Context switches: voluntary=33067
+51969 nonvoluntary=51969
+
+===============================================
+Timestamp: Wed Mar 11 02:27:48 AM IST 2026
+Status: RUNNING | Elapsed: 03:51:00 | CPU: 99.8% | RAM: 5.2GB
+GPU Status:
+0, 45772 MiB, 143771 MiB, 42 %, 37
+1, 40747 MiB, 143771 MiB, 46 %, 32
+Worker threads: 14
+Context switches: voluntary=33141
+53001 nonvoluntary=53001
+
+===============================================
+Timestamp: Wed Mar 11 02:32:48 AM IST 2026
+Status: RUNNING | Elapsed: 03:56:00 | CPU: 99.8% | RAM: 5.2GB
+GPU Status:
+0, 45772 MiB, 143771 MiB, 44 %, 38
+1, 40747 MiB, 143771 MiB, 41 %, 32
+Worker threads: 14
+Context switches: voluntary=33239
+53450 nonvoluntary=53450
+
+===============================================
+Timestamp: Wed Mar 11 02:37:49 AM IST 2026
+Status: RUNNING | Elapsed: 04:01:00 | CPU: 99.8% | RAM: 5.2GB
+GPU Status:
+0, 45772 MiB, 143771 MiB, 41 %, 38
+1, 40747 MiB, 143771 MiB, 54 %, 40
+Worker threads: 14
+Context switches: voluntary=33340
+54433 nonvoluntary=54433
+
+===============================================
+Timestamp: Wed Mar 11 02:42:49 AM IST 2026
+Status: RUNNING | Elapsed: 04:06:01 | CPU: 99.8% | RAM: 5.2GB
+GPU Status:
+0, 45772 MiB, 143771 MiB, 84 %, 51
+1, 40747 MiB, 143771 MiB, 84 %, 45
+Worker threads: 14
+Context switches: voluntary=33631
+55406 nonvoluntary=55406
+
+===============================================
+Timestamp: Wed Mar 11 02:47:50 AM IST 2026
+Status: RUNNING | Elapsed: 04:11:01 | CPU: 99.8% | RAM: 5.2GB
+GPU Status:
+0, 45968 MiB, 143771 MiB, 61 %, 56
+1, 40885 MiB, 143771 MiB, 90 %, 45
+Worker threads: 14
+Context switches: voluntary=35162
+57407 nonvoluntary=57407
+
+===============================================
+Timestamp: Wed Mar 11 02:52:50 AM IST 2026
+Status: RUNNING | Elapsed: 04:16:02 | CPU: 99.8% | RAM: 5.2GB
+GPU Status:
+0, 45968 MiB, 143771 MiB, 39 %, 37
+1, 40885 MiB, 143771 MiB, 43 %, 38
+Worker threads: 14
+Context switches: voluntary=35712
+58476 nonvoluntary=58476
+
+===============================================
+Timestamp: Wed Mar 11 02:57:50 AM IST 2026
+Status: RUNNING | Elapsed: 04:21:02 | CPU: 99.8% | RAM: 5.2GB
+GPU Status:
+0, 45968 MiB, 143771 MiB, 40 %, 37
+1, 40885 MiB, 143771 MiB, 40 %, 32
+Worker threads: 14
+Context switches: voluntary=35805
+59186 nonvoluntary=59186
+
+===============================================
+Timestamp: Wed Mar 11 03:02:51 AM IST 2026
+Status: RUNNING | Elapsed: 04:26:02 | CPU: 99.8% | RAM: 4.9GB
+GPU Status:
+0, 45968 MiB, 143771 MiB, 40 %, 37
+1, 40885 MiB, 143771 MiB, 43 %, 32
+Worker threads: 14
+Context switches: voluntary=35893
+59890 nonvoluntary=59890
+
+===============================================
+Timestamp: Wed Mar 11 03:07:51 AM IST 2026
+Status: RUNNING | Elapsed: 04:31:03 | CPU: 99.8% | RAM: 4.8GB
+GPU Status:
+0, 45968 MiB, 143771 MiB, 60 %, 43
+1, 40885 MiB, 143771 MiB, 38 %, 33
+Worker threads: 14
+Context switches: voluntary=35966
+60544 nonvoluntary=60544
+
+===============================================
+Timestamp: Wed Mar 11 03:12:52 AM IST 2026
+Status: RUNNING | Elapsed: 04:36:03 | CPU: 99.8% | RAM: 4.8GB
+GPU Status:
+0, 45968 MiB, 143771 MiB, 44 %, 38
+1, 40885 MiB, 143771 MiB, 48 %, 33
+Worker threads: 14
+Context switches: voluntary=37026
+61681 nonvoluntary=61681
+
+===============================================
+Timestamp: Wed Mar 11 03:17:52 AM IST 2026
+Status: RUNNING | Elapsed: 04:41:04 | CPU: 99.8% | RAM: 4.9GB
+GPU Status:
+0, 45968 MiB, 143771 MiB, 87 %, 58
+1, 40885 MiB, 143771 MiB, 85 %, 45
+Worker threads: 14
+Context switches: voluntary=38427
+63632 nonvoluntary=63632
+
+===============================================
+Timestamp: Wed Mar 11 03:22:52 AM IST 2026
+Status: RUNNING | Elapsed: 04:46:04 | CPU: 99.8% | RAM: 4.9GB
+GPU Status:
+0, 45968 MiB, 143771 MiB, 38 %, 39
+1, 40885 MiB, 143771 MiB, 44 %, 33
+Worker threads: 14
+Context switches: voluntary=39441
+65559 nonvoluntary=65559
+
+===============================================
+Timestamp: Wed Mar 11 03:27:53 AM IST 2026
+Status: RUNNING | Elapsed: 04:51:04 | CPU: 99.8% | RAM: 4.9GB
+GPU Status:
+0, 45968 MiB, 143771 MiB, 43 %, 37
+1, 40885 MiB, 143771 MiB, 42 %, 32
+Worker threads: 14
+Context switches: voluntary=39530
+66185 nonvoluntary=66185
+
+===============================================
+Timestamp: Wed Mar 11 03:32:53 AM IST 2026
+Status: RUNNING | Elapsed: 04:56:05 | CPU: 99.8% | RAM: 4.9GB
+GPU Status:
+0, 45968 MiB, 143771 MiB, 40 %, 37
+1, 40885 MiB, 143771 MiB, 46 %, 32
+Worker threads: 14
+Context switches: voluntary=39610
+66793 nonvoluntary=66793
+
+===============================================
+Timestamp: Wed Mar 11 03:37:54 AM IST 2026
+Status: RUNNING | Elapsed: 05:01:05 | CPU: 99.8% | RAM: 4.9GB
+GPU Status:
+0, 45968 MiB, 143771 MiB, 43 %, 37
+1, 40885 MiB, 143771 MiB, 42 %, 32
+Worker threads: 14
+Context switches: voluntary=39698
+67589 nonvoluntary=67589
+
+===============================================
+Timestamp: Wed Mar 11 03:42:54 AM IST 2026
+Status: RUNNING | Elapsed: 05:06:05 | CPU: 99.8% | RAM: 4.9GB
+GPU Status:
+0, 45968 MiB, 143771 MiB, 41 %, 36
+1, 40885 MiB, 143771 MiB, 47 %, 31
+Worker threads: 14
+Context switches: voluntary=39786
+68218 nonvoluntary=68218
+
+===============================================
+Timestamp: Wed Mar 11 03:47:54 AM IST 2026
+Status: RUNNING | Elapsed: 05:11:06 | CPU: 99.8% | RAM: 4.9GB
+GPU Status:
+0, 45968 MiB, 143771 MiB, 87 %, 56
+1, 40885 MiB, 143771 MiB, 89 %, 45
+Worker threads: 14
+Context switches: voluntary=40663
+69631 nonvoluntary=69631
+
+===============================================
+Timestamp: Wed Mar 11 03:52:55 AM IST 2026
+Status: RUNNING | Elapsed: 05:16:06 | CPU: 99.8% | RAM: 4.9GB
+GPU Status:
+0, 45968 MiB, 143771 MiB, 41 %, 44
+1, 40885 MiB, 143771 MiB, 41 %, 36
+Worker threads: 14
+Context switches: voluntary=42120
+71626 nonvoluntary=71626
+
+===============================================
+Timestamp: Wed Mar 11 03:57:55 AM IST 2026
+Status: RUNNING | Elapsed: 05:21:07 | CPU: 99.8% | RAM: 4.9GB
+GPU Status:
+0, 45968 MiB, 143771 MiB, 40 %, 37
+1, 40885 MiB, 143771 MiB, 43 %, 32
+Worker threads: 14
+Context switches: voluntary=42199
+72185 nonvoluntary=72185
+
+===============================================
+Timestamp: Wed Mar 11 04:02:56 AM IST 2026
+Status: RUNNING | Elapsed: 05:26:07 | CPU: 99.8% | RAM: 4.9GB
+GPU Status:
+0, 45968 MiB, 143771 MiB, 42 %, 37
+1, 40885 MiB, 143771 MiB, 41 %, 32
+Worker threads: 14
+Context switches: voluntary=42294
+73005 nonvoluntary=73005
+
+===============================================
+Timestamp: Wed Mar 11 04:07:56 AM IST 2026
+Status: RUNNING | Elapsed: 05:31:07 | CPU: 99.8% | RAM: 4.8GB
+GPU Status:
+0, 45968 MiB, 143771 MiB, 69 %, 42
+1, 40885 MiB, 143771 MiB, 40 %, 34
+Worker threads: 14
+Context switches: voluntary=42416
+73663 nonvoluntary=73663
+
+===============================================
+Timestamp: Wed Mar 11 04:17:04 AM IST 2026
+Status: RUNNING | Elapsed: 05:40:27 | CPU: 108% | RAM: 4.8GB
+GPU Status:
+0, 45968 MiB, 143771 MiB, 0 %, 36
+1, 40885 MiB, 143771 MiB, 0 %, 31
+Worker threads: 14
+Context switches: voluntary=53521
+75681 nonvoluntary=75692
+
+===============================================
+Timestamp: Wed Mar 11 04:25:06 AM IST 2026
+Status: RUNNING | Elapsed: 05:48:17 | CPU: 112% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 43 %, 39
+1, 40871 MiB, 143771 MiB, 74 %, 33
+Worker threads: 14
+Context switches: voluntary=55944
+76763 nonvoluntary=76763
+
+===============================================
+Timestamp: Wed Mar 11 04:30:06 AM IST 2026
+Status: RUNNING | Elapsed: 05:53:18 | CPU: 112% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 100 %, 34
+1, 40871 MiB, 143771 MiB, 40 %, 32
+Worker threads: 14
+Context switches: voluntary=56149
+77229 nonvoluntary=77229
+
+===============================================
+Timestamp: Wed Mar 11 04:35:07 AM IST 2026
+Status: RUNNING | Elapsed: 05:58:18 | CPU: 112% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 93 %, 53
+1, 40871 MiB, 143771 MiB, 76 %, 44
+Worker threads: 14
+Context switches: voluntary=57573
+79271 nonvoluntary=79271
+
+===============================================
+Timestamp: Wed Mar 11 04:40:07 AM IST 2026
+Status: RUNNING | Elapsed: 06:03:18 | CPU: 112% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 41 %, 37
+1, 40871 MiB, 143771 MiB, 39 %, 32
+Worker threads: 14
+Context switches: voluntary=58394
+80308 nonvoluntary=80308
+
+===============================================
+Timestamp: Wed Mar 11 04:45:07 AM IST 2026
+Status: RUNNING | Elapsed: 06:08:19 | CPU: 112% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 70 %, 42
+1, 40871 MiB, 143771 MiB, 46 %, 33
+Worker threads: 14
+Context switches: voluntary=58471
+80862 nonvoluntary=80862
+
+===============================================
+Timestamp: Wed Mar 11 04:50:08 AM IST 2026
+Status: RUNNING | Elapsed: 06:13:19 | CPU: 111% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 41 %, 37
+1, 40871 MiB, 143771 MiB, 35 %, 32
+Worker threads: 14
+Context switches: voluntary=58544
+81521 nonvoluntary=81521
+
+===============================================
+Timestamp: Wed Mar 11 04:55:08 AM IST 2026
+Status: RUNNING | Elapsed: 06:18:20 | CPU: 111% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 41 %, 37
+1, 40871 MiB, 143771 MiB, 40 %, 32
+Worker threads: 14
+Context switches: voluntary=58616
+82117 nonvoluntary=82117
+
+===============================================
+Timestamp: Wed Mar 11 05:00:08 AM IST 2026
+Status: RUNNING | Elapsed: 06:23:20 | CPU: 111% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 43 %, 37
+1, 40871 MiB, 143771 MiB, 40 %, 32
+Worker threads: 14
+Context switches: voluntary=58687
+82574 nonvoluntary=82574
+
+===============================================
+Timestamp: Wed Mar 11 05:05:09 AM IST 2026
+Status: RUNNING | Elapsed: 06:28:20 | CPU: 111% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 78 %, 57
+1, 40871 MiB, 143771 MiB, 73 %, 48
+Worker threads: 14
+Context switches: voluntary=59663
+83879 nonvoluntary=83879
+
+===============================================
+Timestamp: Wed Mar 11 05:10:09 AM IST 2026
+Status: RUNNING | Elapsed: 06:33:21 | CPU: 111% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 41 %, 41
+1, 40871 MiB, 143771 MiB, 51 %, 37
+Worker threads: 14
+Context switches: voluntary=60905
+85548 nonvoluntary=85548
+
+===============================================
+Timestamp: Wed Mar 11 05:15:10 AM IST 2026
+Status: RUNNING | Elapsed: 06:38:21 | CPU: 111% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 43 %, 39
+1, 40871 MiB, 143771 MiB, 46 %, 34
+Worker threads: 14
+Context switches: voluntary=60977
+86303 nonvoluntary=86303
+
+===============================================
+Timestamp: Wed Mar 11 05:20:10 AM IST 2026
+Status: RUNNING | Elapsed: 06:43:21 | CPU: 111% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 76 %, 44
+1, 40871 MiB, 143771 MiB, 48 %, 34
+Worker threads: 14
+Context switches: voluntary=61045
+86755 nonvoluntary=86755
+
+===============================================
+Timestamp: Wed Mar 11 05:25:10 AM IST 2026
+Status: RUNNING | Elapsed: 06:48:22 | CPU: 110% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 39 %, 39
+1, 40871 MiB, 143771 MiB, 48 %, 36
+Worker threads: 14
+Context switches: voluntary=61117
+87618 nonvoluntary=87618
+
+===============================================
+Timestamp: Wed Mar 11 05:30:11 AM IST 2026
+Status: RUNNING | Elapsed: 06:53:22 | CPU: 110% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 40 %, 39
+1, 40871 MiB, 143771 MiB, 45 %, 33
+Worker threads: 14
+Context switches: voluntary=61192
+88273 nonvoluntary=88273
+
+===============================================
+Timestamp: Wed Mar 11 05:35:11 AM IST 2026
+Status: RUNNING | Elapsed: 06:58:22 | CPU: 110% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 91 %, 58
+1, 40871 MiB, 143771 MiB, 85 %, 48
+Worker threads: 14
+Context switches: voluntary=61737
+88947 nonvoluntary=88947
+
+===============================================
+Timestamp: Wed Mar 11 05:40:11 AM IST 2026
+Status: RUNNING | Elapsed: 07:03:23 | CPU: 110% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 69 %, 57
+1, 40871 MiB, 143771 MiB, 85 %, 47
+Worker threads: 14
+Context switches: voluntary=63240
+90701 nonvoluntary=90701
+
+===============================================
+Timestamp: Wed Mar 11 05:45:12 AM IST 2026
+Status: RUNNING | Elapsed: 07:08:23 | CPU: 110% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 42 %, 39
+1, 40871 MiB, 143771 MiB, 42 %, 33
+Worker threads: 14
+Context switches: voluntary=63489
+91837 nonvoluntary=91837
+
+===============================================
+Timestamp: Wed Mar 11 05:50:12 AM IST 2026
+Status: RUNNING | Elapsed: 07:13:24 | CPU: 110% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 41 %, 39
+1, 40871 MiB, 143771 MiB, 46 %, 34
+Worker threads: 14
+Context switches: voluntary=63574
+92330 nonvoluntary=92330
+
+===============================================
+Timestamp: Wed Mar 11 05:55:12 AM IST 2026
+Status: RUNNING | Elapsed: 07:18:24 | CPU: 110% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 42 %, 40
+1, 40871 MiB, 143771 MiB, 46 %, 34
+Worker threads: 14
+Context switches: voluntary=63650
+93275 nonvoluntary=93275
+
+===============================================
+Timestamp: Wed Mar 11 06:00:13 AM IST 2026
+Status: RUNNING | Elapsed: 07:23:24 | CPU: 110% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 39 %, 39
+1, 40871 MiB, 143771 MiB, 41 %, 33
+Worker threads: 14
+Context switches: voluntary=63728
+93886 nonvoluntary=93886
+
+===============================================
+Timestamp: Wed Mar 11 06:05:13 AM IST 2026
+Status: RUNNING | Elapsed: 07:28:25 | CPU: 109% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 70 %, 48
+1, 40871 MiB, 143771 MiB, 62 %, 43
+Worker threads: 14
+Context switches: voluntary=63835
+94370 nonvoluntary=94370
+
+===============================================
+Timestamp: Wed Mar 11 06:10:14 AM IST 2026
+Status: RUNNING | Elapsed: 07:33:25 | CPU: 109% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 84 %, 55
+1, 40871 MiB, 143771 MiB, 74 %, 46
+Worker threads: 14
+Context switches: voluntary=65335
+95955 nonvoluntary=95955
+
+===============================================
+Timestamp: Wed Mar 11 06:15:14 AM IST 2026
+Status: RUNNING | Elapsed: 07:38:25 | CPU: 109% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 43 %, 39
+1, 40871 MiB, 143771 MiB, 42 %, 33
+Worker threads: 14
+Context switches: voluntary=66022
+97247 nonvoluntary=97247
+
+===============================================
+Timestamp: Wed Mar 11 06:20:14 AM IST 2026
+Status: RUNNING | Elapsed: 07:43:26 | CPU: 109% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 41 %, 39
+1, 40871 MiB, 143771 MiB, 40 %, 33
+Worker threads: 14
+Context switches: voluntary=66084
+97636 nonvoluntary=97636
+
+===============================================
+Timestamp: Wed Mar 11 06:25:15 AM IST 2026
+Status: RUNNING | Elapsed: 07:48:26 | CPU: 109% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 43 %, 40
+1, 40871 MiB, 143771 MiB, 51 %, 34
+Worker threads: 14
+Context switches: voluntary=66149
+98102 nonvoluntary=98102
+
+===============================================
+Timestamp: Wed Mar 11 06:30:15 AM IST 2026
+Status: RUNNING | Elapsed: 07:53:27 | CPU: 109% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 39 %, 39
+1, 40871 MiB, 143771 MiB, 40 %, 33
+Worker threads: 14
+Context switches: voluntary=66231
+98963 nonvoluntary=98963
+
+===============================================
+Timestamp: Wed Mar 11 06:35:15 AM IST 2026
+Status: RUNNING | Elapsed: 07:58:27 | CPU: 109% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 76 %, 39
+1, 40871 MiB, 143771 MiB, 31 %, 33
+Worker threads: 14
+Context switches: voluntary=66298
+99524 nonvoluntary=99524
+
+===============================================
+Timestamp: Wed Mar 11 06:40:16 AM IST 2026
+Status: RUNNING | Elapsed: 08:03:27 | CPU: 109% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 85 %, 57
+1, 40871 MiB, 143771 MiB, 66 %, 48
+Worker threads: 14
+Context switches: voluntary=67403
+101022 nonvoluntary=101022
+
+===============================================
+Timestamp: Wed Mar 11 06:45:16 AM IST 2026
+Status: RUNNING | Elapsed: 08:08:28 | CPU: 109% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 42 %, 41
+1, 40871 MiB, 143771 MiB, 46 %, 35
+Worker threads: 14
+Context switches: voluntary=68549
+102461 nonvoluntary=102461
+
+===============================================
+Timestamp: Wed Mar 11 06:50:17 AM IST 2026
+Status: RUNNING | Elapsed: 08:13:28 | CPU: 109% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 43 %, 39
+1, 40871 MiB, 143771 MiB, 42 %, 34
+Worker threads: 14
+Context switches: voluntary=68624
+102956 nonvoluntary=102956
+
+===============================================
+Timestamp: Wed Mar 11 06:55:17 AM IST 2026
+Status: RUNNING | Elapsed: 08:18:28 | CPU: 108% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 43 %, 40
+1, 40871 MiB, 143771 MiB, 51 %, 34
+Worker threads: 14
+Context switches: voluntary=68704
+103472 nonvoluntary=103472
+
+===============================================
+Timestamp: Wed Mar 11 07:00:17 AM IST 2026
+Status: RUNNING | Elapsed: 08:23:29 | CPU: 108% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 43 %, 39
+1, 40871 MiB, 143771 MiB, 42 %, 33
+Worker threads: 14
+Context switches: voluntary=68786
+103831 nonvoluntary=103831
+
+===============================================
+Timestamp: Wed Mar 11 07:05:18 AM IST 2026
+Status: RUNNING | Elapsed: 08:28:29 | CPU: 108% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 45 %, 40
+1, 40871 MiB, 143771 MiB, 46 %, 34
+Worker threads: 14
+Context switches: voluntary=68871
+104331 nonvoluntary=104331
+
+===============================================
+Timestamp: Wed Mar 11 07:10:18 AM IST 2026
+Status: RUNNING | Elapsed: 08:33:30 | CPU: 108% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 65 %, 58
+1, 40871 MiB, 143771 MiB, 67 %, 48
+Worker threads: 14
+Context switches: voluntary=69520
+105310 nonvoluntary=105310
+
+===============================================
+Timestamp: Wed Mar 11 07:15:18 AM IST 2026
+Status: RUNNING | Elapsed: 08:38:30 | CPU: 108% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 73 %, 54
+1, 40871 MiB, 143771 MiB, 64 %, 49
+Worker threads: 14
+Context switches: voluntary=71017
+107116 nonvoluntary=107116
+
+===============================================
+Timestamp: Wed Mar 11 07:20:19 AM IST 2026
+Status: RUNNING | Elapsed: 08:43:30 | CPU: 108% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 41 %, 40
+1, 40871 MiB, 143771 MiB, 42 %, 34
+Worker threads: 14
+Context switches: voluntary=71185
+107737 nonvoluntary=107737
+
+===============================================
+Timestamp: Wed Mar 11 07:25:19 AM IST 2026
+Status: RUNNING | Elapsed: 08:48:31 | CPU: 108% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 43 %, 40
+1, 40871 MiB, 143771 MiB, 45 %, 35
+Worker threads: 14
+Context switches: voluntary=71254
+108210 nonvoluntary=108210
+
+===============================================
+Timestamp: Wed Mar 11 07:30:20 AM IST 2026
+Status: RUNNING | Elapsed: 08:53:31 | CPU: 108% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 41 %, 39
+1, 40871 MiB, 143771 MiB, 36 %, 34
+Worker threads: 14
+Context switches: voluntary=71313
+108707 nonvoluntary=108707
+
+===============================================
+Timestamp: Wed Mar 11 07:35:20 AM IST 2026
+Status: RUNNING | Elapsed: 08:58:31 | CPU: 108% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 44 %, 40
+1, 40871 MiB, 143771 MiB, 60 %, 34
+Worker threads: 14
+Context switches: voluntary=71378
+109216 nonvoluntary=109216
+
+===============================================
+Timestamp: Wed Mar 11 07:40:20 AM IST 2026
+Status: RUNNING | Elapsed: 09:03:32 | CPU: 108% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 77 %, 49
+1, 40871 MiB, 143771 MiB, 81 %, 47
+Worker threads: 14
+Context switches: voluntary=71563
+109909 nonvoluntary=109909
+
+===============================================
+Timestamp: Wed Mar 11 07:45:21 AM IST 2026
+Status: RUNNING | Elapsed: 09:08:32 | CPU: 108% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 87 %, 53
+1, 40871 MiB, 143771 MiB, 70 %, 48
+Worker threads: 14
+Context switches: voluntary=73052
+111866 nonvoluntary=111866
+
+===============================================
+Timestamp: Wed Mar 11 07:50:21 AM IST 2026
+Status: RUNNING | Elapsed: 09:13:32 | CPU: 108% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 43 %, 39
+1, 40871 MiB, 143771 MiB, 48 %, 34
+Worker threads: 14
+Context switches: voluntary=73676
+112994 nonvoluntary=112994
+
+===============================================
+Timestamp: Wed Mar 11 07:55:21 AM IST 2026
+Status: RUNNING | Elapsed: 09:18:33 | CPU: 107% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 41 %, 38
+1, 40871 MiB, 143771 MiB, 44 %, 33
+Worker threads: 14
+Context switches: voluntary=73747
+113519 nonvoluntary=113520
+
+===============================================
+Timestamp: Wed Mar 11 08:00:22 AM IST 2026
+Status: RUNNING | Elapsed: 09:23:33 | CPU: 107% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 41 %, 39
+1, 40871 MiB, 143771 MiB, 71 %, 35
+Worker threads: 14
+Context switches: voluntary=73807
+113851 nonvoluntary=113851
+
+===============================================
+Timestamp: Wed Mar 11 08:05:22 AM IST 2026
+Status: RUNNING | Elapsed: 09:28:34 | CPU: 107% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 42 %, 39
+1, 40871 MiB, 143771 MiB, 41 %, 33
+Worker threads: 14
+Context switches: voluntary=73864
+114237 nonvoluntary=114237
+
+===============================================
+Timestamp: Wed Mar 11 08:10:23 AM IST 2026
+Status: RUNNING | Elapsed: 09:33:34 | CPU: 107% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 95 %, 41
+1, 40871 MiB, 143771 MiB, 42 %, 34
+Worker threads: 14
+Context switches: voluntary=73942
+114885 nonvoluntary=114885
+
+===============================================
+Timestamp: Wed Mar 11 08:15:23 AM IST 2026
+Status: RUNNING | Elapsed: 09:38:34 | CPU: 107% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 60 %, 55
+1, 40871 MiB, 143771 MiB, 77 %, 46
+Worker threads: 14
+Context switches: voluntary=75085
+116152 nonvoluntary=116152
+
+===============================================
+Timestamp: Wed Mar 11 08:20:23 AM IST 2026
+Status: RUNNING | Elapsed: 09:43:35 | CPU: 107% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 40 %, 41
+1, 40871 MiB, 143771 MiB, 40 %, 34
+Worker threads: 14
+Context switches: voluntary=76241
+117884 nonvoluntary=117884
+
+===============================================
+Timestamp: Wed Mar 11 08:25:24 AM IST 2026
+Status: RUNNING | Elapsed: 09:48:35 | CPU: 107% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 41 %, 39
+1, 40871 MiB, 143771 MiB, 22 %, 33
+Worker threads: 14
+Context switches: voluntary=76311
+118433 nonvoluntary=118433
+
+===============================================
+Timestamp: Wed Mar 11 08:30:24 AM IST 2026
+Status: RUNNING | Elapsed: 09:53:35 | CPU: 107% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 41 %, 39
+1, 40871 MiB, 143771 MiB, 40 %, 33
+Worker threads: 14
+Context switches: voluntary=76385
+119100 nonvoluntary=119100
+
+===============================================
+Timestamp: Wed Mar 11 08:35:24 AM IST 2026
+Status: RUNNING | Elapsed: 09:58:36 | CPU: 107% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 37 %, 45
+1, 40871 MiB, 143771 MiB, 40 %, 33
+Worker threads: 14
+Context switches: voluntary=76464
+119936 nonvoluntary=119936
+
+===============================================
+Timestamp: Wed Mar 11 08:40:25 AM IST 2026
+Status: RUNNING | Elapsed: 10:03:36 | CPU: 107% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 43 %, 40
+1, 40871 MiB, 143771 MiB, 47 %, 34
+Worker threads: 14
+Context switches: voluntary=76536
+120472 nonvoluntary=120472
+
+===============================================
+Timestamp: Wed Mar 11 08:45:25 AM IST 2026
+Status: RUNNING | Elapsed: 10:08:37 | CPU: 107% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 86 %, 54
+1, 40871 MiB, 143771 MiB, 88 %, 47
+Worker threads: 14
+Context switches: voluntary=77125
+121111 nonvoluntary=121111
+
+===============================================
+Timestamp: Wed Mar 11 08:50:25 AM IST 2026
+Status: RUNNING | Elapsed: 10:13:37 | CPU: 107% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 82 %, 55
+1, 40871 MiB, 143771 MiB, 85 %, 47
+Worker threads: 14
+Context switches: voluntary=78607
+123112 nonvoluntary=123112
+
+===============================================
+Timestamp: Wed Mar 11 08:55:26 AM IST 2026
+Status: RUNNING | Elapsed: 10:18:37 | CPU: 107% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 42 %, 39
+1, 40871 MiB, 143771 MiB, 42 %, 33
+Worker threads: 14
+Context switches: voluntary=78915
+130795 nonvoluntary=130795
+
+===============================================
+Timestamp: Wed Mar 11 09:00:26 AM IST 2026
+Status: RUNNING | Elapsed: 10:23:38 | CPU: 107% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 45 %, 39
+1, 40871 MiB, 143771 MiB, 39 %, 33
+Worker threads: 14
+Context switches: voluntary=78995
+131167 nonvoluntary=131167
+
+===============================================
+Timestamp: Wed Mar 11 09:05:27 AM IST 2026
+Status: RUNNING | Elapsed: 10:28:38 | CPU: 107% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 41 %, 38
+1, 40871 MiB, 143771 MiB, 41 %, 33
+Worker threads: 14
+Context switches: voluntary=79069
+131656 nonvoluntary=131656
+
+===============================================
+Timestamp: Wed Mar 11 09:10:27 AM IST 2026
+Status: RUNNING | Elapsed: 10:33:38 | CPU: 106% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 40 %, 39
+1, 40871 MiB, 143771 MiB, 42 %, 34
+Worker threads: 14
+Context switches: voluntary=79150
+132144 nonvoluntary=132144
+
+===============================================
+Timestamp: Wed Mar 11 09:15:27 AM IST 2026
+Status: RUNNING | Elapsed: 10:38:39 | CPU: 106% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 100 %, 35
+1, 40871 MiB, 143771 MiB, 40 %, 33
+Worker threads: 14
+Context switches: voluntary=79216
+132639 nonvoluntary=132639
+
+===============================================
+Timestamp: Wed Mar 11 09:20:28 AM IST 2026
+Status: RUNNING | Elapsed: 10:43:39 | CPU: 106% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 65 %, 57
+1, 40871 MiB, 143771 MiB, 70 %, 50
+Worker threads: 14
+Context switches: voluntary=80632
+134070 nonvoluntary=134070
+
+===============================================
+Timestamp: Wed Mar 11 09:25:28 AM IST 2026
+Status: RUNNING | Elapsed: 10:48:40 | CPU: 106% | RAM: 4.8GB
+GPU Status:
+0, 45955 MiB, 143771 MiB, 22 %, 38
+1, 40871 MiB, 143771 MiB, 37 %, 33
+Worker threads: 14
+Context switches: voluntary=81530
+135309 nonvoluntary=135309
+
+===============================================
+Timestamp: Wed Mar 11 09:30:28 AM IST 2026
+Status: RUNNING | Elapsed: 10:53:40 | CPU: 106% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 41 %, 37
+1, 37108 MiB, 143771 MiB, 42 %, 32
+Worker threads: 14
+Context switches: voluntary=81722
+135764 nonvoluntary=135764
+
+===============================================
+Timestamp: Wed Mar 11 09:35:29 AM IST 2026
+Status: RUNNING | Elapsed: 10:58:40 | CPU: 106% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 41 %, 37
+1, 37108 MiB, 143771 MiB, 39 %, 32
+Worker threads: 14
+Context switches: voluntary=81807
+136257 nonvoluntary=136257
+
+===============================================
+Timestamp: Wed Mar 11 09:40:29 AM IST 2026
+Status: RUNNING | Elapsed: 11:03:41 | CPU: 106% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 38 %, 39
+1, 37108 MiB, 143771 MiB, 40 %, 33
+Worker threads: 14
+Context switches: voluntary=81896
+136572 nonvoluntary=136572
+
+===============================================
+Timestamp: Wed Mar 11 09:45:30 AM IST 2026
+Status: RUNNING | Elapsed: 11:08:41 | CPU: 106% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 63 %, 38
+1, 37108 MiB, 143771 MiB, 39 %, 32
+Worker threads: 14
+Context switches: voluntary=81982
+137174 nonvoluntary=137174
+
+===============================================
+Timestamp: Wed Mar 11 09:50:30 AM IST 2026
+Status: RUNNING | Elapsed: 11:13:41 | CPU: 106% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 76 %, 52
+1, 37108 MiB, 143771 MiB, 81 %, 43
+Worker threads: 14
+Context switches: voluntary=82581
+137848 nonvoluntary=137848
+
+===============================================
+Timestamp: Wed Mar 11 09:55:30 AM IST 2026
+Status: RUNNING | Elapsed: 11:18:42 | CPU: 106% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 86 %, 56
+1, 37108 MiB, 143771 MiB, 86 %, 43
+Worker threads: 14
+Context switches: voluntary=84122
+138952 nonvoluntary=138952
+
+===============================================
+Timestamp: Wed Mar 11 10:00:31 AM IST 2026
+Status: RUNNING | Elapsed: 11:23:42 | CPU: 106% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 39 %, 37
+1, 37108 MiB, 143771 MiB, 40 %, 32
+Worker threads: 14
+Context switches: voluntary=84402
+139549 nonvoluntary=139549
+
+===============================================
+Timestamp: Wed Mar 11 10:05:31 AM IST 2026
+Status: RUNNING | Elapsed: 11:28:43 | CPU: 106% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 39 %, 38
+1, 37108 MiB, 143771 MiB, 62 %, 36
+Worker threads: 14
+Context switches: voluntary=84492
+139905 nonvoluntary=139905
+
+===============================================
+Timestamp: Wed Mar 11 10:10:31 AM IST 2026
+Status: RUNNING | Elapsed: 11:33:43 | CPU: 106% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 39 %, 38
+1, 37108 MiB, 143771 MiB, 41 %, 33
+Worker threads: 14
+Context switches: voluntary=84575
+140312 nonvoluntary=140312
+
+===============================================
+Timestamp: Wed Mar 11 10:15:32 AM IST 2026
+Status: RUNNING | Elapsed: 11:38:43 | CPU: 106% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 39 %, 38
+1, 37108 MiB, 143771 MiB, 41 %, 33
+Worker threads: 14
+Context switches: voluntary=84654
+140700 nonvoluntary=140700
+
+===============================================
+Timestamp: Wed Mar 11 10:20:32 AM IST 2026
+Status: RUNNING | Elapsed: 11:43:44 | CPU: 106% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 39 %, 38
+1, 37108 MiB, 143771 MiB, 100 %, 30
+Worker threads: 14
+Context switches: voluntary=84747
+141063 nonvoluntary=141063
+
+===============================================
+Timestamp: Wed Mar 11 10:25:33 AM IST 2026
+Status: RUNNING | Elapsed: 11:48:44 | CPU: 106% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 62 %, 55
+1, 37108 MiB, 143771 MiB, 65 %, 46
+Worker threads: 14
+Context switches: voluntary=86173
+142427 nonvoluntary=142427
+
+===============================================
+Timestamp: Wed Mar 11 10:30:33 AM IST 2026
+Status: RUNNING | Elapsed: 11:53:44 | CPU: 106% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 39 %, 39
+1, 37108 MiB, 143771 MiB, 41 %, 33
+Worker threads: 14
+Context switches: voluntary=87160
+143660 nonvoluntary=143660
+
+===============================================
+Timestamp: Wed Mar 11 10:35:33 AM IST 2026
+Status: RUNNING | Elapsed: 11:58:45 | CPU: 106% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 38 %, 38
+1, 37108 MiB, 143771 MiB, 40 %, 33
+Worker threads: 14
+Context switches: voluntary=87255
+144145 nonvoluntary=144145
+
+===============================================
+Timestamp: Wed Mar 11 10:40:34 AM IST 2026
+Status: RUNNING | Elapsed: 12:03:45 | CPU: 106% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 39 %, 38
+1, 37108 MiB, 143771 MiB, 40 %, 33
+Worker threads: 14
+Context switches: voluntary=87349
+144558 nonvoluntary=144558
+
+===============================================
+Timestamp: Wed Mar 11 10:45:34 AM IST 2026
+Status: RUNNING | Elapsed: 12:08:46 | CPU: 106% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 41 %, 38
+1, 37108 MiB, 143771 MiB, 40 %, 33
+Worker threads: 14
+Context switches: voluntary=87423
+144952 nonvoluntary=144952
+
+===============================================
+Timestamp: Wed Mar 11 10:50:34 AM IST 2026
+Status: RUNNING | Elapsed: 12:13:46 | CPU: 106% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 39 %, 38
+1, 37108 MiB, 143771 MiB, 40 %, 33
+Worker threads: 14
+Context switches: voluntary=87502
+145401 nonvoluntary=145401
+
+===============================================
+Timestamp: Wed Mar 11 10:55:35 AM IST 2026
+Status: RUNNING | Elapsed: 12:18:46 | CPU: 105% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 81 %, 55
+1, 37108 MiB, 143771 MiB, 68 %, 45
+Worker threads: 14
+Context switches: voluntary=88128
+146575 nonvoluntary=146575
+
+===============================================
+Timestamp: Wed Mar 11 11:00:35 AM IST 2026
+Status: RUNNING | Elapsed: 12:23:47 | CPU: 105% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 92 %, 53
+1, 37108 MiB, 143771 MiB, 84 %, 46
+Worker threads: 14
+Context switches: voluntary=89678
+147989 nonvoluntary=147989
+
+===============================================
+Timestamp: Wed Mar 11 11:05:36 AM IST 2026
+Status: RUNNING | Elapsed: 12:28:47 | CPU: 105% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 42 %, 38
+1, 37108 MiB, 143771 MiB, 44 %, 33
+Worker threads: 14
+Context switches: voluntary=89967
+148539 nonvoluntary=148539
+
+===============================================
+Timestamp: Wed Mar 11 11:10:36 AM IST 2026
+Status: RUNNING | Elapsed: 12:33:47 | CPU: 105% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 41 %, 38
+1, 37108 MiB, 143771 MiB, 34 %, 33
+Worker threads: 14
+Context switches: voluntary=90041
+149014 nonvoluntary=149014
+
+===============================================
+Timestamp: Wed Mar 11 11:15:36 AM IST 2026
+Status: RUNNING | Elapsed: 12:38:48 | CPU: 105% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 32 %, 38
+1, 37108 MiB, 143771 MiB, 41 %, 33
+Worker threads: 14
+Context switches: voluntary=90109
+149598 nonvoluntary=149598
+
+===============================================
+Timestamp: Wed Mar 11 11:20:37 AM IST 2026
+Status: RUNNING | Elapsed: 12:43:48 | CPU: 105% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 41 %, 39
+1, 37108 MiB, 143771 MiB, 40 %, 33
+Worker threads: 14
+Context switches: voluntary=90175
+149966 nonvoluntary=149966
+
+===============================================
+Timestamp: Wed Mar 11 11:25:37 AM IST 2026
+Status: RUNNING | Elapsed: 12:48:49 | CPU: 105% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 39 %, 38
+1, 37108 MiB, 143771 MiB, 100 %, 30
+Worker threads: 14
+Context switches: voluntary=90321
+150285 nonvoluntary=150285
+
+===============================================
+Timestamp: Wed Mar 11 11:30:37 AM IST 2026
+Status: RUNNING | Elapsed: 12:53:49 | CPU: 105% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 66 %, 58
+1, 37108 MiB, 143771 MiB, 78 %, 44
+Worker threads: 14
+Context switches: voluntary=91762
+151720 nonvoluntary=151720
+
+===============================================
+Timestamp: Wed Mar 11 11:35:38 AM IST 2026
+Status: RUNNING | Elapsed: 12:58:49 | CPU: 105% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 40 %, 39
+1, 37108 MiB, 143771 MiB, 40 %, 33
+Worker threads: 14
+Context switches: voluntary=92812
+152818 nonvoluntary=152818
+
+===============================================
+Timestamp: Wed Mar 11 11:40:38 AM IST 2026
+Status: RUNNING | Elapsed: 13:03:50 | CPU: 105% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 65 %, 43
+1, 37108 MiB, 143771 MiB, 42 %, 32
+Worker threads: 14
+Context switches: voluntary=92933
+153490 nonvoluntary=153490
+
+===============================================
+Timestamp: Wed Mar 11 11:45:39 AM IST 2026
+Status: RUNNING | Elapsed: 13:08:50 | CPU: 105% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 41 %, 38
+1, 37108 MiB, 143771 MiB, 40 %, 33
+Worker threads: 14
+Context switches: voluntary=93014
+153916 nonvoluntary=153916
+
+===============================================
+Timestamp: Wed Mar 11 11:50:39 AM IST 2026
+Status: RUNNING | Elapsed: 13:13:50 | CPU: 105% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 38 %, 39
+1, 37108 MiB, 143771 MiB, 43 %, 33
+Worker threads: 14
+Context switches: voluntary=93112
+154430 nonvoluntary=154430
+
+===============================================
+Timestamp: Wed Mar 11 11:55:39 AM IST 2026
+Status: RUNNING | Elapsed: 13:18:51 | CPU: 105% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 35 %, 38
+1, 37108 MiB, 143771 MiB, 40 %, 33
+Worker threads: 14
+Context switches: voluntary=93191
+154981 nonvoluntary=154981
+
+===============================================
+Timestamp: Wed Mar 11 12:00:40 PM IST 2026
+Status: RUNNING | Elapsed: 13:23:51 | CPU: 105% | RAM: 4.8GB
+GPU Status:
+0, 43159 MiB, 143771 MiB, 64 %, 55
+1, 37108 MiB, 143771 MiB, 86 %, 47
+Worker threads: 14
+Context switches: voluntary=93787
+155867 nonvoluntary=155867
+
+===============================================
+Timestamp: Wed Mar 11 12:05:40 PM IST 2026
+Status: PROCESS ENDED (PID 3488088 not found)
+Checking exit: last few lines of dmesg for OOM:
+
+GPU Memory (should be freed):
+0, 8050 MiB, 143771 MiB, 0 %
+1, 1878 MiB, 143771 MiB, 0 %
+=== TRAINING FINISHED/CRASHED at Wed Mar 11 12:05:40 PM IST 2026 ===

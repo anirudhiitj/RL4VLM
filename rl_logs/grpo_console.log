@@ -1,0 +1,640 @@
+==========================================
+  GRPO RL Training - Points24
+  GPU: 6 | Env: rl4vlm_clean
+  Worktree: /mnt/raid/rl_gaming/RL4VLM_grpo
+  Log dir: /mnt/raid/rl_gaming/RL4VLM_grpo/VLM_PPO/rl_logs/points24_grpo
+  Start: Wed Apr  1 01:53:06 AM IST 2026
+==========================================
+using xformers
+Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+Users of this version of Gym should be able to simply replace 'import gym' with 'import gymnasium as gym' in the vast majority of cases.
+See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+/mnt/raid/rl_gaming/RL4VLM_grpo/VLM_PPO/a2c_ppo_acktr/rl_utils.py:37: SyntaxWarning: invalid escape sequence '\{'
+  qs = qs + "Your response should be a valid json file in the following format: \{\n"
+/mnt/raid/rl_gaming/RL4VLM_grpo/VLM_PPO/a2c_ppo_acktr/rl_utils.py:44: SyntaxWarning: invalid escape sequence '\}'
+  qs = qs + "\"action\": \"{number}\" or \"{operator}\" \n \}"
+/mnt/raid/rl_gaming/RL4VLM_grpo/VLM_PPO/a2c_ppo_acktr/rl_utils.py:56: SyntaxWarning: invalid escape sequence '\{'
+  qs = qs + "Your response should be a valid json file in the following format: \{\n"
+/mnt/raid/rl_gaming/RL4VLM_grpo/VLM_PPO/a2c_ppo_acktr/rl_utils.py:63: SyntaxWarning: invalid escape sequence '\}'
+  qs = qs + "\"action\": \"{number}\" or \"{operator}\" \n \}"
+/mnt/raid/rl_gaming/RL4VLM_grpo/VLM_PPO/a2c_ppo_acktr/arguments.py:167: SyntaxWarning: invalid escape sequence '\{'
+  parser.add_argument("--prompt", type=str, default="What is the next action? Please format your response as 'The next action is \{response\}.'")
+================================================================================
+  GRPO (Group Relative Policy Optimization) Training for Points24
+  Log directory: ../rl_logs/points24_grpo
+  Group size (G): 8
+  KL coefficient: 0.01
+  Start time: 2026-04-01T01:53:13.799985
+================================================================================
+Model path: /mnt/raid/rl_gaming/RL4VLM/checkpoints/points24_sft_1epoch
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:05<00:16,  5.40s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:11<00:11,  5.57s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:16<00:05,  5.37s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:16<00:00,  3.42s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:16<00:00,  4.16s/it]
+Some weights of the model checkpoint at /mnt/raid/rl_gaming/RL4VLM/checkpoints/points24_sft_1epoch were not used when initializing LlavaLlamaForCausalLM: ['model.image_newline']
+- This IS expected if you are initializing LlavaLlamaForCausalLM from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing LlavaLlamaForCausalLM from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+['up_proj', 'out_proj', 'mm_projector.0', 'mm_projector.2', 'k_proj', 'o_proj', 'gate_proj', 'v_proj', 'q_proj', 'fc2', 'down_proj', 'fc1']
+Prompt:
+A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions. USER: <image>
+You are an expert 24 points card game player. You are observing thee four cards in the image. You are observing the current formula: . You can choose between ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '+', '-', '*', '/', '(', ')', '=']. The number or operator you choose will be appended to the current formula. Note that 'J', 'Q', and 'K' count as '10'. Your goal is to output a formula that evaluates to 24, and each number can only be used once. Your response should be a valid json file in the following format: \{
+ "cards": [x, y, z, w], 
+"current formula": , 
+"thoughts": {First check whether the current formula equals 24. If the current formula equals 24, output '='. Otherwise consider which number or operator should be appended to the current formula to make it equal 24.} 
+"action": "{number}" or "{operator}" 
+ \} ASSISTANT:
+
+================================================================================
+  GRPO Configuration
+  Group size (G): 8
+  KL coef: 0.01
+  Num updates: 117
+  States per iteration: 128
+  GRPO epochs: 4
+  Init LR: 1e-05, End LR: 1e-09
+  Use LoRA: True
+================================================================================
+
+GRPO Training:   0%|                                                                            | 0/117 [00:00<?, ?it/s]
+  Iter 0 group sampling:   0%|                                                     | 0/128 [00:00<?][A
+  Iter 0 group sampling:   1%|▍                                                | 1/128 [00:24<51:23][A
+  Iter 0 group sampling:   2%|▊                                                | 2/128 [00:49<51:38][A
+  Iter 0 group sampling:   2%|█▏                                               | 3/128 [01:15<52:46][A
+  Iter 0 group sampling:   3%|█▌                                               | 4/128 [01:41<53:00][A
+  Iter 0 group sampling:   4%|█▉                                               | 5/128 [02:08<53:48][A
+  Iter 0 group sampling:   5%|██▏                                            | 6/128 [02:48<1:03:02][A
+  Iter 0 group sampling:   5%|██▌                                            | 7/128 [03:29<1:08:44][A
+  Iter 0 group sampling:   6%|██▉                                            | 8/128 [04:09<1:12:12][A
+  Iter 0 group sampling:   7%|███▎                                           | 9/128 [04:50<1:14:17][A
+  Iter 0 group sampling:   8%|███▌                                          | 10/128 [05:30<1:15:29][A
+  Iter 0 group sampling:   9%|███▉                                          | 11/128 [06:12<1:16:47][A
+  Iter 0 group sampling:   9%|████▎                                         | 12/128 [06:46<1:13:02][A
+  Iter 0 group sampling:  10%|████▋                                         | 13/128 [07:20<1:10:18][A
+  Iter 0 group sampling:  11%|█████                                         | 14/128 [07:54<1:08:21][A
+  Iter 0 group sampling:  12%|█████▍                                        | 15/128 [08:31<1:08:11][A
+  Iter 0 group sampling:  12%|█████▊                                        | 16/128 [09:10<1:08:48][A
+  Iter 0 group sampling:  13%|██████                                        | 17/128 [09:48<1:09:19][A
+  Iter 0 group sampling:  14%|██████▍                                       | 18/128 [10:29<1:10:06][A
+  Iter 0 group sampling:  15%|██████▊                                       | 19/128 [11:09<1:10:36][A
+  Iter 0 group sampling:  16%|███████▏                                      | 20/128 [11:50<1:11:26][A
+  Iter 0 group sampling:  16%|███████▌                                      | 21/128 [12:25<1:07:46][A
+  Iter 0 group sampling:  17%|███████▉                                      | 22/128 [12:59<1:05:04][A
+  Iter 0 group sampling:  18%|████████▎                                     | 23/128 [13:33<1:03:00][A
+  Iter 0 group sampling:  19%|████████▋                                     | 24/128 [14:09<1:02:39][A
+  Iter 0 group sampling:  20%|████████▉                                     | 25/128 [14:48<1:03:11][A
+  Iter 0 group sampling:  20%|█████████▎                                    | 26/128 [15:25<1:02:46][A
+  Iter 0 group sampling:  21%|█████████▋                                    | 27/128 [16:02<1:02:16][A
+  Iter 0 group sampling:  22%|██████████                                    | 28/128 [16:41<1:02:32][A
+  Iter 0 group sampling:  23%|██████████▍                                   | 29/128 [17:19<1:02:30][A
+  Iter 0 group sampling:  23%|██████████▊                                   | 30/128 [17:58<1:02:20][A
+  Iter 0 group sampling:  24%|███████████▏                                  | 31/128 [18:37<1:01:56][A
+  Iter 0 group sampling:  25%|███████████▌                                  | 32/128 [19:14<1:00:32][A
+  Iter 0 group sampling:  26%|████████████▍                                   | 33/128 [19:51<59:55][A
+  Iter 0 group sampling:  27%|████████████▊                                   | 34/128 [20:30<59:43][A
+  Iter 0 group sampling:  27%|█████████████▏                                  | 35/128 [21:09<59:25][A
+  Iter 0 group sampling:  28%|█████████████▌                                  | 36/128 [21:48<58:57][A
+  Iter 0 group sampling:  29%|█████████████▉                                  | 37/128 [22:27<58:27][A
+  Iter 0 group sampling:  30%|██████████████▎                                 | 38/128 [23:05<57:53][A
+  Iter 0 group sampling:  30%|██████████████▋                                 | 39/128 [23:44<57:18][A
+  Iter 0 group sampling:  31%|███████████████                                 | 40/128 [24:23<56:40][A
+  Iter 0 group sampling:  32%|███████████████▍                                | 41/128 [25:01<56:03][A
+  Iter 0 group sampling:  33%|███████████████▊                                | 42/128 [25:40<55:27][A
+  Iter 0 group sampling:  34%|████████████████▏                               | 43/128 [26:19<54:51][A
+  Iter 0 group sampling:  34%|████████████████▌                               | 44/128 [26:58<54:14][A
+  Iter 0 group sampling:  35%|████████████████▉                               | 45/128 [27:36<53:35][A
+  Iter 0 group sampling:  36%|█████████████████▎                              | 46/128 [28:11<51:10][A
+  Iter 0 group sampling:  37%|█████████████████▋                              | 47/128 [28:47<49:57][A
+  Iter 0 group sampling:  38%|██████████████████                              | 48/128 [29:24<49:23][A
+  Iter 0 group sampling:  38%|██████████████████▍                             | 49/128 [30:01<48:48][A
+  Iter 0 group sampling:  39%|██████████████████▊                             | 50/128 [30:38<48:11][A
+  Iter 0 group sampling:  40%|███████████████████▏                            | 51/128 [31:15<47:31][A
+  Iter 0 group sampling:  41%|███████████████████▌                            | 52/128 [31:52<46:52][A
+  Iter 0 group sampling:  41%|███████████████████▉                            | 53/128 [32:29<46:10][A
+  Iter 0 group sampling:  42%|████████████████████▎                           | 54/128 [33:06<45:35][A
+  Iter 0 group sampling:  43%|████████████████████▋                           | 55/128 [33:43<45:01][A
+  Iter 0 group sampling:  44%|█████████████████████                           | 56/128 [34:20<44:27][A
+  Iter 0 group sampling:  45%|█████████████████████▍                          | 57/128 [34:57<43:52][A
+  Iter 0 group sampling:  45%|█████████████████████▊                          | 58/128 [35:34<43:12][A
+  Iter 0 group sampling:  46%|██████████████████████▏                         | 59/128 [36:11<42:35][A
+  Iter 0 group sampling:  47%|██████████████████████▌                         | 60/128 [36:48<41:56][A
+  Iter 0 group sampling:  48%|██████████████████████▉                         | 61/128 [37:25<41:20][A
+  Iter 0 group sampling:  48%|███████████████████████▎                        | 62/128 [38:02<40:39][A
+  Iter 0 group sampling:  49%|███████████████████████▋                        | 63/128 [38:39<40:02][A
+  Iter 0 group sampling:  50%|████████████████████████                        | 64/128 [39:16<39:22][A
+  Iter 0 group sampling:  51%|████████████████████████▍                       | 65/128 [39:53<38:49][A
+  Iter 0 group sampling:  52%|████████████████████████▊                       | 66/128 [40:28<37:41][A
+  Iter 0 group sampling:  52%|█████████████████████████▏                      | 67/128 [41:02<36:11][A
+  Iter 0 group sampling:  53%|█████████████████████████▌                      | 68/128 [41:37<35:25][A
+  Iter 0 group sampling:  54%|█████████████████████████▉                      | 69/128 [42:13<35:07][A
+  Iter 0 group sampling:  55%|██████████████████████████▎                     | 70/128 [42:50<34:41][A
+  Iter 0 group sampling:  55%|██████████████████████████▋                     | 71/128 [43:26<34:09][A
+  Iter 0 group sampling:  56%|███████████████████████████                     | 72/128 [44:02<33:41][A
+  Iter 0 group sampling:  57%|███████████████████████████▍                    | 73/128 [44:38<33:09][A
+  Iter 0 group sampling:  58%|███████████████████████████▊                    | 74/128 [45:14<32:30][A
+  Iter 0 group sampling:  59%|████████████████████████████▏                   | 75/128 [45:51<31:54][A
+  Iter 0 group sampling:  59%|████████████████████████████▌                   | 76/128 [46:27<31:16][A
+  Iter 0 group sampling:  60%|████████████████████████████▉                   | 77/128 [47:03<30:43][A
+  Iter 0 group sampling:  61%|█████████████████████████████▎                  | 78/128 [47:39<30:06][A
+  Iter 0 group sampling:  62%|█████████████████████████████▋                  | 79/128 [48:15<29:32][A
+  Iter 0 group sampling:  62%|██████████████████████████████                  | 80/128 [48:52<28:58][A
+  Iter 0 group sampling:  63%|██████████████████████████████▍                 | 81/128 [49:28<28:24][A
+  Iter 0 group sampling:  64%|██████████████████████████████▊                 | 82/128 [50:04<27:48][A
+  Iter 0 group sampling:  65%|███████████████████████████████▏                | 83/128 [50:40<27:11][A
+  Iter 0 group sampling:  66%|███████████████████████████████▌                | 84/128 [51:17<26:35][A
+  Iter 0 group sampling:  66%|███████████████████████████████▉                | 85/128 [51:53<25:59][A
+  Iter 0 group sampling:  67%|████████████████████████████████▎               | 86/128 [52:29<25:21][A
+  Iter 0 group sampling:  68%|████████████████████████████████▋               | 87/128 [53:05<24:43][A
+  Iter 0 group sampling:  69%|█████████████████████████████████               | 88/128 [53:42<24:09][A
+  Iter 0 group sampling:  70%|█████████████████████████████████▍              | 89/128 [54:18<23:30][A
+  Iter 0 group sampling:  70%|█████████████████████████████████▊              | 90/128 [54:52<22:38][A
+  Iter 0 group sampling:  71%|██████████████████████████████████▏             | 91/128 [55:28<22:03][A
+  Iter 0 group sampling:  72%|██████████████████████████████████▌             | 92/128 [56:04<21:33][A
+  Iter 0 group sampling:  73%|██████████████████████████████████▉             | 93/128 [56:41<21:01][A
+  Iter 0 group sampling:  73%|███████████████████████████████████▎            | 94/128 [57:17<20:28][A
+  Iter 0 group sampling:  74%|███████████████████████████████████▋            | 95/128 [57:53<19:53][A
+  Iter 0 group sampling:  75%|████████████████████████████████████            | 96/128 [58:29<19:16][A
+  Iter 0 group sampling:  76%|████████████████████████████████████▍           | 97/128 [59:06<18:40][A
+  Iter 0 group sampling:  77%|████████████████████████████████████▊           | 98/128 [59:42<18:04][A
+  Iter 0 group sampling:  77%|███████████████████████████████████▌          | 99/128 [1:00:18<17:27][A
+  Iter 0 group sampling:  78%|███████████████████████████████████▏         | 100/128 [1:00:54<16:52][A
+  Iter 0 group sampling:  79%|███████████████████████████████████▌         | 101/128 [1:01:29<16:03][A
+  Iter 0 group sampling:  80%|███████████████████████████████████▊         | 102/128 [1:02:01<14:58][A
+  Iter 0 group sampling:  80%|████████████████████████████████████▏        | 103/128 [1:02:36<14:30][A
+  Iter 0 group sampling:  81%|████████████████████████████████████▌        | 104/128 [1:03:11<13:56][A
+  Iter 0 group sampling:  82%|████████████████████████████████████▉        | 105/128 [1:03:46<13:25][A
+  Iter 0 group sampling:  83%|█████████████████████████████████████▎       | 106/128 [1:04:21<12:50][A
+  Iter 0 group sampling:  84%|█████████████████████████████████████▌       | 107/128 [1:04:57<12:18][A
+  Iter 0 group sampling:  84%|█████████████████████████████████████▉       | 108/128 [1:05:32<11:45][A
+  Iter 0 group sampling:  85%|██████████████████████████████████████▎      | 109/128 [1:06:07<11:09][A
+  Iter 0 group sampling:  86%|██████████████████████████████████████▋      | 110/128 [1:06:43<10:34][A
+  Iter 0 group sampling:  87%|███████████████████████████████████████      | 111/128 [1:07:18<09:57][A
+  Iter 0 group sampling:  88%|███████████████████████████████████████▍     | 112/128 [1:07:52<09:19][A
+  Iter 0 group sampling:  88%|███████████████████████████████████████▋     | 113/128 [1:08:27<08:43][A
+  Iter 0 group sampling:  89%|████████████████████████████████████████     | 114/128 [1:09:03<08:13][A
+  Iter 0 group sampling:  90%|████████████████████████████████████████▍    | 115/128 [1:09:39<07:42][A
+  Iter 0 group sampling:  91%|████████████████████████████████████████▊    | 116/128 [1:10:17<07:15][A
+  Iter 0 group sampling:  91%|█████████████████████████████████████████▏   | 117/128 [1:10:55<06:44][A
+  Iter 0 group sampling:  92%|█████████████████████████████████████████▍   | 118/128 [1:11:34<06:12][A
+  Iter 0 group sampling:  93%|█████████████████████████████████████████▊   | 119/128 [1:12:13<05:41][A
+  Iter 0 group sampling:  94%|██████████████████████████████████████████▏  | 120/128 [1:12:53<05:07][A
+  Iter 0 group sampling:  95%|██████████████████████████████████████████▌  | 121/128 [1:13:33<04:31][A
+  Iter 0 group sampling:  95%|██████████████████████████████████████████▉  | 122/128 [1:14:12<03:54][A
+  Iter 0 group sampling:  96%|███████████████████████████████████████████▏ | 123/128 [1:14:52<03:16][A
+  Iter 0 group sampling:  97%|███████████████████████████████████████████▌ | 124/128 [1:15:31<02:37][A
+  Iter 0 group sampling:  98%|███████████████████████████████████████████▉ | 125/128 [1:16:11<01:58][A
+  Iter 0 group sampling:  98%|████████████████████████████████████████████▎| 126/128 [1:16:51<01:18][A
+  Iter 0 group sampling:  99%|████████████████████████████████████████████▋| 127/128 [1:17:30<00:39][A
+  Iter 0 group sampling: 100%|█████████████████████████████████████████████| 128/128 [1:18:10<00:00][A
+                                                                                                    [A
+============================================================
+  GRPO ITERATION 0/117
+  Timesteps: 1024 | FPS: 0 | Elapsed: 119.9 min
+  Reward mean: -6.375 | Success: 25.0%
+  Action Loss: 0.043809 | KL Loss: 0.000000
+  Group reward mean: -0.563 | std: 1.402
+  Best-in-group rate: 0.016
+  LR: 9.96e-06
+GRPO Training:   0%|                                                                          | 0/117 [1:59:55<?, ?it/s]GRPO Training:   1%|▌                                                           | 1/117 [1:59:55<231:51:39, 7195.68s/it]
+  Iter 1 group sampling:   0%|                                                     | 0/128 [00:00<?][A
+  Iter 1 group sampling:   1%|▎                                              | 1/128 [00:39<1:23:54][A
+  Iter 1 group sampling:   2%|▋                                              | 2/128 [01:19<1:23:16][A
+  Iter 1 group sampling:   2%|█                                              | 3/128 [01:58<1:22:37][A
+  Iter 1 group sampling:   3%|█▍                                             | 4/128 [02:38<1:22:01][A
+  Iter 1 group sampling:   4%|█▊                                             | 5/128 [03:18<1:21:21][A
+  Iter 1 group sampling:   5%|██▏                                            | 6/128 [03:52<1:16:58][A
+  Iter 1 group sampling:   5%|██▌                                            | 7/128 [04:28<1:15:15][A
+  Iter 1 group sampling:   6%|██▉                                            | 8/128 [05:00<1:11:02][A
+  Iter 1 group sampling:   7%|███▎                                           | 9/128 [05:37<1:11:27][A
+  Iter 1 group sampling:   8%|███▌                                          | 10/128 [06:16<1:12:33][A
+  Iter 1 group sampling:   9%|███▉                                          | 11/128 [06:55<1:13:04][A
+  Iter 1 group sampling:   9%|████▎                                         | 12/128 [07:34<1:13:18][A
+  Iter 1 group sampling:  10%|████▋                                         | 13/128 [08:13<1:13:13][A
+  Iter 1 group sampling:  11%|█████                                         | 14/128 [08:51<1:12:57][A
+  Iter 1 group sampling:  12%|█████▍                                        | 15/128 [09:30<1:12:34][A
+  Iter 1 group sampling:  12%|█████▊                                        | 16/128 [10:09<1:12:03][A
+  Iter 1 group sampling:  13%|██████                                        | 17/128 [10:48<1:11:30][A
+  Iter 1 group sampling:  14%|██████▍                                       | 18/128 [11:27<1:10:57][A
+  Iter 1 group sampling:  15%|██████▊                                       | 19/128 [12:05<1:10:20][A
+  Iter 1 group sampling:  16%|███████▏                                      | 20/128 [12:44<1:09:44][A
+  Iter 1 group sampling:  16%|███████▌                                      | 21/128 [13:23<1:09:09][A
+  Iter 1 group sampling:  17%|███████▉                                      | 22/128 [14:02<1:08:32][A
+  Iter 1 group sampling:  18%|████████▎                                     | 23/128 [14:41<1:07:53][A
+  Iter 1 group sampling:  19%|████████▋                                     | 24/128 [15:19<1:07:11][A
+  Iter 1 group sampling:  20%|████████▉                                     | 25/128 [15:58<1:06:32][A
+  Iter 1 group sampling:  20%|█████████▎                                    | 26/128 [16:37<1:05:59][A
+  Iter 1 group sampling:  21%|█████████▋                                    | 27/128 [17:16<1:05:16][A
+  Iter 1 group sampling:  22%|██████████                                    | 28/128 [17:52<1:03:27][A
+  Iter 1 group sampling:  23%|██████████▍                                   | 29/128 [18:31<1:03:01][A
+  Iter 1 group sampling:  23%|██████████▊                                   | 30/128 [19:09<1:02:30][A
+  Iter 1 group sampling:  24%|███████████▏                                  | 31/128 [19:48<1:01:56][A
+  Iter 1 group sampling:  25%|███████████▌                                  | 32/128 [20:26<1:01:25][A
+  Iter 1 group sampling:  26%|███████████▊                                  | 33/128 [21:04<1:00:44][A
+  Iter 1 group sampling:  27%|████████████▏                                 | 34/128 [21:43<1:00:06][A
+  Iter 1 group sampling:  27%|█████████████▏                                  | 35/128 [22:21<59:35][A
+  Iter 1 group sampling:  28%|█████████████▌                                  | 36/128 [23:00<58:54][A
+  Iter 1 group sampling:  29%|█████████████▉                                  | 37/128 [23:37<57:52][A
+  Iter 1 group sampling:  30%|██████████████▎                                 | 38/128 [24:16<57:33][A
+  Iter 1 group sampling:  30%|██████████████▋                                 | 39/128 [24:55<57:05][A
+  Iter 1 group sampling:  31%|███████████████                                 | 40/128 [25:35<57:03][A
+  Iter 1 group sampling:  32%|███████████████▍                                | 41/128 [26:12<55:44][A
+  Iter 1 group sampling:  33%|███████████████▊                                | 42/128 [26:51<55:24][A
+  Iter 1 group sampling:  34%|████████████████▏                               | 43/128 [27:31<55:20][A
+  Iter 1 group sampling:  34%|████████████████▌                               | 44/128 [28:11<55:04][A
+  Iter 1 group sampling:  35%|████████████████▉                               | 45/128 [28:51<54:41][A
+  Iter 1 group sampling:  36%|█████████████████▎                              | 46/128 [29:31<54:14][A
+  Iter 1 group sampling:  37%|█████████████████▋                              | 47/128 [30:12<53:46][A
+  Iter 1 group sampling:  38%|██████████████████                              | 48/128 [30:44<50:18][A
+  Iter 1 group sampling:  38%|██████████████████▍                             | 49/128 [31:17<47:45][A
+  Iter 1 group sampling:  39%|██████████████████▊                             | 50/128 [31:52<46:23][A
+  Iter 1 group sampling:  40%|███████████████████▏                            | 51/128 [32:28<46:09][A
+  Iter 1 group sampling:  41%|███████████████████▌                            | 52/128 [33:07<46:27][A
+  Iter 1 group sampling:  41%|███████████████████▉                            | 53/128 [33:46<46:49][A
+  Iter 1 group sampling:  42%|████████████████████▎                           | 54/128 [34:27<47:42][A
+  Iter 1 group sampling:  43%|████████████████████▋                           | 55/128 [35:09<48:08][A
+  Iter 1 group sampling:  44%|█████████████████████                           | 56/128 [35:51<48:14][A
+  Iter 1 group sampling:  45%|█████████████████████▍                          | 57/128 [36:32<48:03][A
+  Iter 1 group sampling:  45%|█████████████████████▊                          | 58/128 [37:14<47:42][A
+  Iter 1 group sampling:  46%|██████████████████████▏                         | 59/128 [37:55<47:16][A
+  Iter 1 group sampling:  47%|██████████████████████▌                         | 60/128 [38:37<46:46][A
+  Iter 1 group sampling:  48%|██████████████████████▉                         | 61/128 [39:19<46:11][A
+  Iter 1 group sampling:  48%|███████████████████████▎                        | 62/128 [39:59<45:12][A
+  Iter 1 group sampling:  49%|███████████████████████▋                        | 63/128 [40:41<44:43][A
+  Iter 1 group sampling:  50%|████████████████████████                        | 64/128 [41:22<44:08][A
+  Iter 1 group sampling:  51%|████████████████████████▍                       | 65/128 [42:04<43:31][A
+  Iter 1 group sampling:  52%|████████████████████████▊                       | 66/128 [42:46<42:52][A
+  Iter 1 group sampling:  52%|█████████████████████████▏                      | 67/128 [43:27<42:12][A
+  Iter 1 group sampling:  53%|█████████████████████████▌                      | 68/128 [44:09<41:32][A
+  Iter 1 group sampling:  54%|█████████████████████████▉                      | 69/128 [44:50<40:52][A
+  Iter 1 group sampling:  55%|██████████████████████████▎                     | 70/128 [45:32<40:11][A
+  Iter 1 group sampling:  55%|██████████████████████████▋                     | 71/128 [46:06<37:20][A
+  Iter 1 group sampling:  56%|███████████████████████████                     | 72/128 [46:40<35:12][A
+  Iter 1 group sampling:  57%|███████████████████████████▍                    | 73/128 [47:14<33:33][A
+  Iter 1 group sampling:  58%|███████████████████████████▊                    | 74/128 [47:49<32:25][A
+  Iter 1 group sampling:  59%|████████████████████████████▏                   | 75/128 [48:27<32:23][A
+  Iter 1 group sampling:  59%|████████████████████████████▌                   | 76/128 [49:06<32:20][A
+  Iter 1 group sampling:  60%|████████████████████████████▉                   | 77/128 [49:46<32:25][A
+  Iter 1 group sampling:  61%|█████████████████████████████▎                  | 78/128 [50:26<32:15][A
+  Iter 1 group sampling:  62%|█████████████████████████████▋                  | 79/128 [51:06<31:55][A
+  Iter 1 group sampling:  62%|██████████████████████████████                  | 80/128 [51:46<31:28][A
+  Iter 1 group sampling:  63%|██████████████████████████████▍                 | 81/128 [52:26<30:57][A
+  Iter 1 group sampling:  64%|██████████████████████████████▊                 | 82/128 [53:06<30:25][A
+  Iter 1 group sampling:  65%|███████████████████████████████▏                | 83/128 [53:46<29:49][A
+  Iter 1 group sampling:  66%|███████████████████████████████▌                | 84/128 [54:26<29:13][A
+  Iter 1 group sampling:  66%|███████████████████████████████▉                | 85/128 [55:06<28:44][A
+  Iter 1 group sampling:  67%|████████████████████████████████▎               | 86/128 [55:48<28:28][A
+  Iter 1 group sampling:  68%|████████████████████████████████▋               | 87/128 [56:30<28:03][A
+  Iter 1 group sampling:  69%|█████████████████████████████████               | 88/128 [57:12<27:32][A
+  Iter 1 group sampling:  70%|█████████████████████████████████▍              | 89/128 [57:54<27:00][A
+  Iter 1 group sampling:  70%|█████████████████████████████████▊              | 90/128 [58:37<26:24][A
+  Iter 1 group sampling:  71%|██████████████████████████████████▏             | 91/128 [59:18<25:45][A
+  Iter 1 group sampling:  72%|█████████████████████████████████             | 92/128 [1:00:01<25:10][A
+  Iter 1 group sampling:  73%|█████████████████████████████████▍            | 93/128 [1:00:43<24:29][A
+  Iter 1 group sampling:  73%|█████████████████████████████████▊            | 94/128 [1:01:25<23:48][A
+  Iter 1 group sampling:  74%|██████████████████████████████████▏           | 95/128 [1:02:07<23:06][A
+  Iter 1 group sampling:  75%|██████████████████████████████████▌           | 96/128 [1:02:41<21:11][A
+  Iter 1 group sampling:  76%|██████████████████████████████████▊           | 97/128 [1:03:17<19:49][A
+  Iter 1 group sampling:  77%|███████████████████████████████████▏          | 98/128 [1:03:53<18:54][A
+  Iter 1 group sampling:  77%|███████████████████████████████████▌          | 99/128 [1:04:30<18:10][A
+  Iter 1 group sampling:  78%|███████████████████████████████████▏         | 100/128 [1:05:09<17:43][A
+  Iter 1 group sampling:  79%|███████████████████████████████████▌         | 101/128 [1:05:48<17:10][A
+  Iter 1 group sampling:  80%|███████████████████████████████████▊         | 102/128 [1:06:27<16:37][A
+  Iter 1 group sampling:  80%|████████████████████████████████████▏        | 103/128 [1:07:05<16:01][A
+  Iter 1 group sampling:  81%|████████████████████████████████████▌        | 104/128 [1:07:44<15:24][A
+  Iter 1 group sampling:  82%|████████████████████████████████████▉        | 105/128 [1:08:23<14:46][A
+  Iter 1 group sampling:  83%|█████████████████████████████████████▎       | 106/128 [1:08:59<13:50][A
+  Iter 1 group sampling:  84%|█████████████████████████████████████▌       | 107/128 [1:09:37<13:18][A
+  Iter 1 group sampling:  84%|█████████████████████████████████████▉       | 108/128 [1:10:16<12:45][A
+  Iter 1 group sampling:  85%|██████████████████████████████████████▎      | 109/128 [1:10:55<12:09][A
+  Iter 1 group sampling:  86%|██████████████████████████████████████▋      | 110/128 [1:11:33<11:32][A
+  Iter 1 group sampling:  87%|███████████████████████████████████████      | 111/128 [1:12:12<10:55][A
+  Iter 1 group sampling:  88%|███████████████████████████████████████▍     | 112/128 [1:12:51<10:17][A
+  Iter 1 group sampling:  88%|███████████████████████████████████████▋     | 113/128 [1:13:30<09:39][A
+  Iter 1 group sampling:  89%|████████████████████████████████████████     | 114/128 [1:14:08<09:01][A
+  Iter 1 group sampling:  90%|████████████████████████████████████████▍    | 115/128 [1:14:47<08:23][A
+  Iter 1 group sampling:  91%|████████████████████████████████████████▊    | 116/128 [1:15:26<07:44][A
+  Iter 1 group sampling:  91%|█████████████████████████████████████████▏   | 117/128 [1:16:05<07:06][A
+  Iter 1 group sampling:  92%|█████████████████████████████████████████▍   | 118/128 [1:16:39<06:13][A
+  Iter 1 group sampling:  93%|█████████████████████████████████████████▊   | 119/128 [1:17:15<05:33][A
+  Iter 1 group sampling:  94%|██████████████████████████████████████████▏  | 120/128 [1:17:53<04:58][A
+  Iter 1 group sampling:  95%|██████████████████████████████████████████▌  | 121/128 [1:18:30<04:20][A
+  Iter 1 group sampling:  95%|██████████████████████████████████████████▉  | 122/128 [1:19:07<03:42][A
+  Iter 1 group sampling:  96%|███████████████████████████████████████████▏ | 123/128 [1:19:46<03:08][A
+  Iter 1 group sampling:  97%|███████████████████████████████████████████▌ | 124/128 [1:20:24<02:31][A
+  Iter 1 group sampling:  98%|███████████████████████████████████████████▉ | 125/128 [1:21:03<01:54][A
+  Iter 1 group sampling:  98%|████████████████████████████████████████████▎| 126/128 [1:21:42<01:16][A
+  Iter 1 group sampling:  99%|████████████████████████████████████████████▋| 127/128 [1:22:20<00:38][A
+  Iter 1 group sampling: 100%|█████████████████████████████████████████████| 128/128 [1:22:59<00:00][A
+                                                                                                    [A
+============================================================
+  GRPO ITERATION 1/117
+  Timesteps: 2048 | FPS: 0 | Elapsed: 244.5 min
+  Reward mean: -9.625 | Success: 12.5%
+  Action Loss: 0.020702 | KL Loss: 0.000000
+  Group reward mean: -0.804 | std: 0.397
+  Best-in-group rate: 0.000
+  LR: 9.84e-06
+GRPO Training:   1%|▌                                                           | 1/117 [4:04:31<231:51:39, 7195.68s/it]GRPO Training:   2%|█                                                           | 2/117 [4:04:31<235:07:15, 7360.31s/it]
+  Iter 2 group sampling:   0%|                                                     | 0/128 [00:00<?][A
+  Iter 2 group sampling:   1%|▎                                              | 1/128 [01:47<3:47:11][A
+  Iter 2 group sampling:   2%|▋                                              | 2/128 [03:34<3:45:36][A
+  Iter 2 group sampling:   2%|█                                              | 3/128 [05:22<3:43:47][A
+  Iter 2 group sampling:   3%|█▍                                             | 4/128 [07:06<3:39:38][A
+  Iter 2 group sampling:   4%|█▊                                             | 5/128 [08:48<3:34:25][A
+  Iter 2 group sampling:   5%|██▏                                            | 6/128 [10:32<3:32:21][A
+  Iter 2 group sampling:   5%|██▌                                            | 7/128 [12:17<3:30:42][A
+  Iter 2 group sampling:   6%|██▉                                            | 8/128 [14:01<3:28:51][A
+  Iter 2 group sampling:   7%|███▎                                           | 9/128 [15:45<3:27:04][A
+  Iter 2 group sampling:   8%|███▌                                          | 10/128 [17:30<3:25:15][A
+  Iter 2 group sampling:   9%|███▉                                          | 11/128 [19:14<3:23:25][A
+  Iter 2 group sampling:   9%|████▎                                         | 12/128 [20:58<3:21:38][A
+  Iter 2 group sampling:  10%|████▋                                         | 13/128 [22:42<3:19:33][A
+  Iter 2 group sampling:  11%|█████                                         | 14/128 [24:25<3:17:37][A
+  Iter 2 group sampling:  12%|█████▍                                        | 15/128 [25:59<3:09:54][A
+  Iter 2 group sampling:  12%|█████▊                                        | 16/128 [27:41<3:08:47][A
+  Iter 2 group sampling:  13%|██████                                        | 17/128 [29:21<3:06:48][A
+  Iter 2 group sampling:  14%|██████▍                                       | 18/128 [31:05<3:06:46][A
+  Iter 2 group sampling:  15%|██████▊                                       | 19/128 [32:49<3:05:52][A
+  Iter 2 group sampling:  16%|███████▏                                      | 20/128 [34:22<2:59:31][A
+  Iter 2 group sampling:  16%|███████▌                                      | 21/128 [36:06<2:59:52][A
+  Iter 2 group sampling:  17%|███████▉                                      | 22/128 [37:40<2:54:38][A
+  Iter 2 group sampling:  18%|████████▎                                     | 23/128 [39:24<2:55:32][A
+  Iter 2 group sampling:  19%|████████▋                                     | 24/128 [40:57<2:50:25][A
+  Iter 2 group sampling:  20%|████████▉                                     | 25/128 [42:21<2:41:21][A
+  Iter 2 group sampling:  20%|█████████▎                                    | 26/128 [43:45<2:34:32][A
+  Iter 2 group sampling:  21%|█████████▋                                    | 27/128 [45:19<2:34:29][A
+  Iter 2 group sampling:  22%|██████████                                    | 28/128 [46:53<2:33:56][A
+  Iter 2 group sampling:  23%|██████████▍                                   | 29/128 [48:33<2:36:23][A
+  Iter 2 group sampling:  23%|██████████▊                                   | 30/128 [50:07<2:34:18][A
+  Iter 2 group sampling:  24%|███████████▏                                  | 31/128 [51:41<2:32:24][A
+  Iter 2 group sampling:  25%|███████████▌                                  | 32/128 [53:25<2:35:36][A
+  Iter 2 group sampling:  26%|███████████▊                                  | 33/128 [55:09<2:37:09][A
+  Iter 2 group sampling:  27%|████████████▏                                 | 34/128 [56:53<2:37:41][A
+  Iter 2 group sampling:  27%|████████████▌                                 | 35/128 [58:36<2:37:25][A
+  Iter 2 group sampling:  28%|████████████▍                               | 36/128 [1:00:20<2:36:37][A
+  Iter 2 group sampling:  29%|████████████▋                               | 37/128 [1:02:04<2:35:39][A
+  Iter 2 group sampling:  30%|█████████████                               | 38/128 [1:03:47<2:34:29][A
+  Iter 2 group sampling:  30%|█████████████▍                              | 39/128 [1:05:21<2:28:29][A
+  Iter 2 group sampling:  31%|█████████████▊                              | 40/128 [1:07:04<2:28:19][A
+  Iter 2 group sampling:  32%|██████████████                              | 41/128 [1:08:38<2:23:11][A
+  Iter 2 group sampling:  33%|██████████████▍                             | 42/128 [1:10:06<2:17:14][A
+  Iter 2 group sampling:  34%|██████████████▊                             | 43/128 [1:11:50<2:18:57][A
+  Iter 2 group sampling:  34%|███████████████▏                            | 44/128 [1:13:33<2:19:37][A
+  Iter 2 group sampling:  35%|███████████████▍                            | 45/128 [1:15:18<2:19:54][A
+  Iter 2 group sampling:  36%|███████████████▊                            | 46/128 [1:17:03<2:19:51][A
+  Iter 2 group sampling:  37%|████████████████▏                           | 47/128 [1:18:39<2:15:48][A
+  Iter 2 group sampling:  38%|████████████████▌                           | 48/128 [1:20:26<2:16:33][A
+  Iter 2 group sampling:  38%|████████████████▊                           | 49/128 [1:21:53<2:08:39][A
+  Iter 2 group sampling:  39%|█████████████████▏                          | 50/128 [1:23:40<2:10:33][A
+  Iter 2 group sampling:  40%|█████████████████▌                          | 51/128 [1:25:26<2:11:15][A
+  Iter 2 group sampling:  41%|█████████████████▉                          | 52/128 [1:27:13<2:11:14][A
+  Iter 2 group sampling:  41%|██████████████████▏                         | 53/128 [1:29:00<2:10:36][A
+  Iter 2 group sampling:  42%|██████████████████▌                         | 54/128 [1:30:40<2:07:33][A
+  Iter 2 group sampling:  43%|██████████████████▉                         | 55/128 [1:32:26<2:06:27][A
+  Iter 2 group sampling:  44%|███████████████████▎                        | 56/128 [1:34:12<2:05:46][A
+  Iter 2 group sampling:  45%|███████████████████▌                        | 57/128 [1:35:59<2:04:37][A
+  Iter 2 group sampling:  45%|███████████████████▉                        | 58/128 [1:37:35<1:59:44][A
+  Iter 2 group sampling:  46%|████████████████████▎                       | 59/128 [1:39:22<1:59:19][A
+  Iter 2 group sampling:  47%|████████████████████▋                       | 60/128 [1:41:08<1:58:32][A
+  Iter 2 group sampling:  48%|████████████████████▉                       | 61/128 [1:42:55<1:57:27][A
+  Iter 2 group sampling:  48%|█████████████████████▎                      | 62/128 [1:44:42<1:56:12][A
+  Iter 2 group sampling:  49%|█████████████████████▋                      | 63/128 [1:46:28<1:54:44][A
+  Iter 2 group sampling:  50%|██████████████████████                      | 64/128 [1:48:15<1:53:18][A
+  Iter 2 group sampling:  51%|██████████████████████▎                     | 65/128 [1:50:02<1:51:39][A
+  Iter 2 group sampling:  52%|██████████████████████▋                     | 66/128 [1:51:46<1:49:09][A
+  Iter 2 group sampling:  52%|███████████████████████                     | 67/128 [1:53:32<1:47:42][A
+  Iter 2 group sampling:  53%|███████████████████████▍                    | 68/128 [1:55:19<1:46:08][A
+  Iter 2 group sampling:  54%|███████████████████████▋                    | 69/128 [1:57:05<1:44:27][A
+  Iter 2 group sampling:  55%|████████████████████████                    | 70/128 [1:58:52<1:42:46][A
+  Iter 2 group sampling:  55%|████████████████████████▍                   | 71/128 [2:00:28<1:38:11][A
+  Iter 2 group sampling:  56%|████████████████████████▊                   | 72/128 [2:02:05<1:34:34][A
+  Iter 2 group sampling:  57%|█████████████████████████                   | 73/128 [2:03:52<1:34:24][A
+  Iter 2 group sampling:  58%|█████████████████████████▍                  | 74/128 [2:05:28<1:30:50][A
+  Iter 2 group sampling:  59%|█████████████████████████▊                  | 75/128 [2:07:15<1:30:41][A
+  Iter 2 group sampling:  59%|██████████████████████████▏                 | 76/128 [2:09:02<1:30:05][A
+  Iter 2 group sampling:  60%|██████████████████████████▍                 | 77/128 [2:10:48<1:29:04][A
+  Iter 2 group sampling:  61%|██████████████████████████▊                 | 78/128 [2:12:33<1:27:16][A
+  Iter 2 group sampling:  62%|███████████████████████████▏                | 79/128 [2:14:20<1:26:03][A
+  Iter 2 group sampling:  62%|███████████████████████████▌                | 80/128 [2:16:06<1:24:34][A
+  Iter 2 group sampling:  63%|███████████████████████████▊                | 81/128 [2:17:53<1:23:01][A
+  Iter 2 group sampling:  64%|████████████████████████████▏               | 82/128 [2:19:40<1:21:23][A
+  Iter 2 group sampling:  65%|████████████████████████████▌               | 83/128 [2:21:26<1:19:42][A
+  Iter 2 group sampling:  66%|████████████████████████████▉               | 84/128 [2:22:52<1:13:32][A
+  Iter 2 group sampling:  66%|█████████████████████████████▏              | 85/128 [2:24:39<1:13:13][A
+  Iter 2 group sampling:  67%|█████████████████████████████▌              | 86/128 [2:26:15<1:10:18][A
+  Iter 2 group sampling:  68%|█████████████████████████████▉              | 87/128 [2:27:52<1:07:48][A
+  Iter 2 group sampling:  69%|██████████████████████████████▎             | 88/128 [2:29:38<1:07:37][A
+  Iter 2 group sampling:  70%|██████████████████████████████▌             | 89/128 [2:31:25<1:06:56][A
+  Iter 2 group sampling:  70%|██████████████████████████████▉             | 90/128 [2:33:01<1:03:59][A
+  Iter 2 group sampling:  71%|███████████████████████████████▎            | 91/128 [2:34:45<1:02:42][A
+  Iter 2 group sampling:  72%|███████████████████████████████▋            | 92/128 [2:36:21<1:00:05][A
+  Iter 2 group sampling:  73%|█████████████████████████████████▍            | 93/128 [2:38:08<59:33][A
+  Iter 2 group sampling:  73%|█████████████████████████████████▊            | 94/128 [2:39:54<58:36][A
+  Iter 2 group sampling:  74%|██████████████████████████████████▏           | 95/128 [2:41:41<57:27][A
+  Iter 2 group sampling:  75%|██████████████████████████████████▌           | 96/128 [2:43:28<56:04][A
+  Iter 2 group sampling:  76%|██████████████████████████████████▊           | 97/128 [2:45:15<54:32][A
+  Iter 2 group sampling:  77%|███████████████████████████████████▏          | 98/128 [2:47:01<52:59][A
+  Iter 2 group sampling:  77%|███████████████████████████████████▌          | 99/128 [2:48:48<51:20][A
+  Iter 2 group sampling:  78%|███████████████████████████████████▏         | 100/128 [2:50:35<49:38][A
+  Iter 2 group sampling:  79%|███████████████████████████████████▌         | 101/128 [2:52:02<45:12][A
+  Iter 2 group sampling:  80%|███████████████████████████████████▊         | 102/128 [2:53:38<43:01][A
+  Iter 2 group sampling:  80%|████████████████████████████████████▏        | 103/128 [2:55:22<41:57][A
+  Iter 2 group sampling:  81%|████████████████████████████████████▌        | 104/128 [2:57:09<40:58][A
+  Iter 2 group sampling:  82%|████████████████████████████████████▉        | 105/128 [2:58:55<39:45][A
+  Iter 2 group sampling:  83%|█████████████████████████████████████▎       | 106/128 [3:00:42<38:20][A
+  Iter 2 group sampling:  84%|█████████████████████████████████████▌       | 107/128 [3:02:19<35:48][A
+  Iter 2 group sampling:  84%|█████████████████████████████████████▉       | 108/128 [3:03:55<33:29][A
+  Iter 2 group sampling:  85%|██████████████████████████████████████▎      | 109/128 [3:05:42<32:23][A
+  Iter 2 group sampling:  86%|██████████████████████████████████████▋      | 110/128 [3:07:20<30:17][A
+  Iter 2 group sampling:  87%|███████████████████████████████████████      | 111/128 [3:09:06<29:05][A
+  Iter 2 group sampling:  88%|███████████████████████████████████████▍     | 112/128 [3:10:53<27:41][A
+  Iter 2 group sampling:  88%|███████████████████████████████████████▋     | 113/128 [3:12:39<26:09][A
+  Iter 2 group sampling:  89%|████████████████████████████████████████     | 114/128 [3:14:26<24:33][A
+  Iter 2 group sampling:  90%|████████████████████████████████████████▍    | 115/128 [3:16:10<22:42][A
+  Iter 2 group sampling:  91%|████████████████████████████████████████▊    | 116/128 [3:17:48<20:32][A
+  Iter 2 group sampling:  91%|█████████████████████████████████████████▏   | 117/128 [3:19:34<19:02][A
+  Iter 2 group sampling:  92%|█████████████████████████████████████████▍   | 118/128 [3:21:21<17:27][A
+  Iter 2 group sampling:  93%|█████████████████████████████████████████▊   | 119/128 [3:23:08<15:48][A
+  Iter 2 group sampling:  94%|██████████████████████████████████████████▏  | 120/128 [3:24:55<14:06][A
+  Iter 2 group sampling:  95%|██████████████████████████████████████████▌  | 121/128 [3:26:41<12:22][A
+  Iter 2 group sampling:  95%|██████████████████████████████████████████▉  | 122/128 [3:28:09<10:02][A
+  Iter 2 group sampling:  96%|███████████████████████████████████████████▏ | 123/128 [3:29:45<08:16][A
+  Iter 2 group sampling:  97%|███████████████████████████████████████████▌ | 124/128 [3:31:32<06:45][A
+  Iter 2 group sampling:  98%|███████████████████████████████████████████▉ | 125/128 [3:33:08<04:59][A
+  Iter 2 group sampling:  98%|████████████████████████████████████████████▎| 126/128 [3:34:54<03:23][A
+  Iter 2 group sampling:  99%|████████████████████████████████████████████▋| 127/128 [3:36:41<01:43][A
+  Iter 2 group sampling: 100%|█████████████████████████████████████████████| 128/128 [3:38:25<00:00][A
+                                                                                                    [A
+============================================================
+  GRPO ITERATION 2/117
+  Timesteps: 3072 | FPS: 0 | Elapsed: 504.6 min
+  Reward mean: -7.636 | Success: 9.1%
+  Action Loss: 0.373323 | KL Loss: 0.000000
+  Group reward mean: -0.569 | std: 0.495
+  Best-in-group rate: 0.000
+  LR: 9.65e-06
+GRPO Training:   2%|█                                                           | 2/117 [8:24:38<235:07:15, 7360.31s/it]GRPO Training:   3%|█▌                                                         | 3/117 [8:24:38<352:19:48, 11126.21s/it]
+  Iter 3 group sampling:   0%|                                                     | 0/128 [00:00<?][A
+  Iter 3 group sampling:   1%|▎                                              | 1/128 [01:46<3:45:03][A
+  Iter 3 group sampling:   2%|▋                                              | 2/128 [03:32<3:43:38][A
+  Iter 3 group sampling:   2%|█                                              | 3/128 [05:19<3:41:54][A
+  Iter 3 group sampling:   3%|█▍                                             | 4/128 [07:06<3:40:16][A
+  Iter 3 group sampling:   4%|█▊                                             | 5/128 [08:52<3:38:31][A
+  Iter 3 group sampling:   5%|██▏                                            | 6/128 [10:39<3:36:45][A
+  Iter 3 group sampling:   5%|██▌                                            | 7/128 [12:26<3:35:00][A
+  Iter 3 group sampling:   6%|██▉                                            | 8/128 [14:12<3:33:12][A
+  Iter 3 group sampling:   7%|███▎                                           | 9/128 [15:59<3:31:18][A
+  Iter 3 group sampling:   8%|███▌                                          | 10/128 [17:45<3:29:30][A
+  Iter 3 group sampling:   9%|███▉                                          | 11/128 [19:32<3:27:41][A
+  Iter 3 group sampling:   9%|████▎                                         | 12/128 [21:14<3:23:50][A
+  Iter 3 group sampling:  10%|████▋                                         | 13/128 [23:01<3:22:49][A
+  Iter 3 group sampling:  11%|█████                                         | 14/128 [24:48<3:21:33][A
+  Iter 3 group sampling:  12%|█████▍                                        | 15/128 [26:35<3:20:12][A
+  Iter 3 group sampling:  12%|█████▊                                        | 16/128 [28:21<3:18:34][A
+  Iter 3 group sampling:  13%|██████                                        | 17/128 [30:08<3:16:52][A
+  Iter 3 group sampling:  14%|██████▍                                       | 18/128 [31:54<3:15:11][A
+  Iter 3 group sampling:  15%|██████▊                                       | 19/128 [33:41<3:13:23][A
+  Iter 3 group sampling:  16%|███████▏                                      | 20/128 [35:28<3:11:57][A
+  Iter 3 group sampling:  16%|███████▌                                      | 21/128 [37:15<3:10:14][A
+  Iter 3 group sampling:  17%|███████▉                                      | 22/128 [39:01<3:08:24][A
+  Iter 3 group sampling:  18%|████████▎                                     | 23/128 [40:48<3:06:34][A
+  Iter 3 group sampling:  19%|████████▋                                     | 24/128 [42:28<3:01:39][A
+  Iter 3 group sampling:  20%|████████▉                                     | 25/128 [44:15<3:00:51][A
+  Iter 3 group sampling:  20%|█████████▎                                    | 26/128 [46:02<2:59:47][A
+  Iter 3 group sampling:  21%|█████████▋                                    | 27/128 [47:49<2:58:35][A
+  Iter 3 group sampling:  22%|██████████                                    | 28/128 [49:35<2:56:59][A
+  Iter 3 group sampling:  23%|██████████▍                                   | 29/128 [51:22<2:55:31][A
+  Iter 3 group sampling:  23%|██████████▊                                   | 30/128 [53:08<2:53:53][A
+  Iter 3 group sampling:  24%|███████████▏                                  | 31/128 [54:55<2:52:17][A
+  Iter 3 group sampling:  25%|███████████▌                                  | 32/128 [56:42<2:50:34][A
+  Iter 3 group sampling:  26%|███████████▊                                  | 33/128 [58:29<2:49:00][A
+  Iter 3 group sampling:  27%|███████████▋                                | 34/128 [1:00:16<2:47:22][A
+  Iter 3 group sampling:  27%|████████████                                | 35/128 [1:02:03<2:45:30][A
+  Iter 3 group sampling:  28%|████████████▍                               | 36/128 [1:03:43<2:40:52][A
+  Iter 3 group sampling:  29%|████████████▋                               | 37/128 [1:05:30<2:39:57][A
+  Iter 3 group sampling:  30%|█████████████                               | 38/128 [1:07:17<2:38:44][A
+  Iter 3 group sampling:  30%|█████████████▍                              | 39/128 [1:09:03<2:37:19][A
+  Iter 3 group sampling:  31%|█████████████▊                              | 40/128 [1:10:50<2:35:46][A
+  Iter 3 group sampling:  32%|██████████████                              | 41/128 [1:12:37<2:34:21][A
+  Iter 3 group sampling:  33%|██████████████▍                             | 42/128 [1:14:24<2:32:44][A
+  Iter 3 group sampling:  34%|██████████████▊                             | 43/128 [1:16:11<2:31:06][A
+  Iter 3 group sampling:  34%|███████████████▏                            | 44/128 [1:17:57<2:29:20][A
+  Iter 3 group sampling:  35%|███████████████▍                            | 45/128 [1:19:44<2:27:37][A
+  Iter 3 group sampling:  36%|███████████████▊                            | 46/128 [1:21:31<2:25:47][A
+  Iter 3 group sampling:  37%|████████████████▏                           | 47/128 [1:23:17<2:23:59][A
+  Iter 3 group sampling:  38%|████████████████▌                           | 48/128 [1:24:57<2:19:31][A
+  Iter 3 group sampling:  38%|████████████████▊                           | 49/128 [1:26:44<2:18:37][A
+  Iter 3 group sampling:  39%|█████████████████▏                          | 50/128 [1:28:31<2:17:28][A
+  Iter 3 group sampling:  40%|█████████████████▌                          | 51/128 [1:30:18<2:16:08][A
+  Iter 3 group sampling:  41%|█████████████████▉                          | 52/128 [1:32:04<2:14:34][A
+  Iter 3 group sampling:  41%|██████████████████▏                         | 53/128 [1:33:51<2:13:04][A
+  Iter 3 group sampling:  42%|██████████████████▌                         | 54/128 [1:35:38<2:11:21][A
+  Iter 3 group sampling:  43%|██████████████████▉                         | 55/128 [1:37:25<2:09:41][A
+  Iter 3 group sampling:  44%|███████████████████▎                        | 56/128 [1:39:11<2:07:52][A
+  Iter 3 group sampling:  45%|███████████████████▌                        | 57/128 [1:40:58<2:06:14][A
+  Iter 3 group sampling:  45%|███████████████████▉                        | 58/128 [1:42:45<2:04:33][A
+  Iter 3 group sampling:  46%|████████████████████▎                       | 59/128 [1:44:32<2:02:51][A
+  Iter 3 group sampling:  47%|████████████████████▋                       | 60/128 [1:46:13<1:59:02][A
+  Iter 3 group sampling:  48%|████████████████████▉                       | 61/128 [1:48:00<1:57:52][A
+  Iter 3 group sampling:  48%|█████████████████████▎                      | 62/128 [1:49:46<1:56:26][A
+  Iter 3 group sampling:  49%|█████████████████████▋                      | 63/128 [1:51:33<1:54:56][A
+  Iter 3 group sampling:  50%|██████████████████████                      | 64/128 [1:53:20<1:53:20][A
+  Iter 3 group sampling:  51%|██████████████████████▎                     | 65/128 [1:55:06<1:51:40][A
+  Iter 3 group sampling:  52%|██████████████████████▋                     | 66/128 [1:56:53<1:50:00][A
+  Iter 3 group sampling:  52%|███████████████████████                     | 67/128 [1:58:39<1:48:16][A
+  Iter 3 group sampling:  53%|███████████████████████▍                    | 68/128 [2:00:26<1:46:38][A
+  Iter 3 group sampling:  54%|███████████████████████▋                    | 69/128 [2:02:13<1:44:52][A
+  Iter 3 group sampling:  55%|████████████████████████                    | 70/128 [2:04:00<1:43:06][A
+  Iter 3 group sampling:  55%|████████████████████████▍                   | 71/128 [2:05:47<1:41:22][A
+  Iter 3 group sampling:  56%|████████████████████████▊                   | 72/128 [2:07:27<1:37:56][A
+  Iter 3 group sampling:  57%|█████████████████████████                   | 73/128 [2:09:14<1:36:42][A
+  Iter 3 group sampling:  58%|█████████████████████████▍                  | 74/128 [2:11:01<1:35:18][A
+  Iter 3 group sampling:  59%|█████████████████████████▊                  | 75/128 [2:12:48<1:33:46][A
+  Iter 3 group sampling:  59%|██████████████████████████▏                 | 76/128 [2:14:35<1:32:08][A
+  Iter 3 group sampling:  60%|██████████████████████████▍                 | 77/128 [2:16:21<1:30:31][A
+  Iter 3 group sampling:  61%|██████████████████████████▊                 | 78/128 [2:18:08<1:28:50][A
+  Iter 3 group sampling:  62%|███████████████████████████▏                | 79/128 [2:19:55<1:27:09][A
+  Iter 3 group sampling:  62%|███████████████████████████▌                | 80/128 [2:21:42<1:25:23][A
+  Iter 3 group sampling:  63%|███████████████████████████▊                | 81/128 [2:23:29<1:23:38][A
+  Iter 3 group sampling:  64%|████████████████████████████▏               | 82/128 [2:25:16<1:21:51][A
+  Iter 3 group sampling:  65%|████████████████████████████▌               | 83/128 [2:27:02<1:20:02][A
+  Iter 3 group sampling:  66%|████████████████████████████▉               | 84/128 [2:28:44<1:17:07][A
+  Iter 3 group sampling:  66%|█████████████████████████████▏              | 85/128 [2:30:31<1:15:42][A
+  Iter 3 group sampling:  67%|█████████████████████████████▌              | 86/128 [2:32:17<1:14:10][A
+  Iter 3 group sampling:  68%|█████████████████████████████▉              | 87/128 [2:34:04<1:12:33][A
+  Iter 3 group sampling:  69%|██████████████████████████████▎             | 88/128 [2:35:51<1:10:51][A
+  Iter 3 group sampling:  70%|██████████████████████████████▌             | 89/128 [2:37:37<1:09:08][A
+  Iter 3 group sampling:  70%|██████████████████████████████▉             | 90/128 [2:39:24<1:07:25][A
+  Iter 3 group sampling:  71%|███████████████████████████████▎            | 91/128 [2:41:10<1:05:41][A
+  Iter 3 group sampling:  72%|███████████████████████████████▋            | 92/128 [2:42:57<1:03:55][A
+  Iter 3 group sampling:  73%|███████████████████████████████▉            | 93/128 [2:44:44<1:02:10][A
+  Iter 3 group sampling:  73%|████████████████████████████████▎           | 94/128 [2:46:30<1:00:24][A
+  Iter 3 group sampling:  74%|██████████████████████████████████▏           | 95/128 [2:48:17<58:38][A
+  Iter 3 group sampling:  75%|██████████████████████████████████▌           | 96/128 [2:49:58<55:55][A
+  Iter 3 group sampling:  76%|██████████████████████████████████▊           | 97/128 [2:51:45<54:29][A
+  Iter 3 group sampling:  77%|███████████████████████████████████▏          | 98/128 [2:53:31<52:54][A
+  Iter 3 group sampling:  77%|███████████████████████████████████▌          | 99/128 [2:55:18<51:17][A
+  Iter 3 group sampling:  78%|███████████████████████████████████▏         | 100/128 [2:57:05<49:35][A
+  Iter 3 group sampling:  79%|███████████████████████████████████▌         | 101/128 [2:58:52<47:54][A
+  Iter 3 group sampling:  80%|███████████████████████████████████▊         | 102/128 [3:00:39<46:13][A
+  Iter 3 group sampling:  80%|████████████████████████████████████▏        | 103/128 [3:02:26<44:28][A
+  Iter 3 group sampling:  81%|████████████████████████████████████▌        | 104/128 [3:04:12<42:41][A
+  Iter 3 group sampling:  82%|████████████████████████████████████▉        | 105/128 [3:05:59<40:54][A
+  Iter 3 group sampling:  83%|█████████████████████████████████████▎       | 106/128 [3:07:46<39:07][A
+  Iter 3 group sampling:  84%|█████████████████████████████████████▌       | 107/128 [3:09:33<37:21][A
+  Iter 3 group sampling:  84%|█████████████████████████████████████▉       | 108/128 [3:11:14<35:01][A
+  Iter 3 group sampling:  85%|██████████████████████████████████████▎      | 109/128 [3:13:00<33:24][A
+  Iter 3 group sampling:  86%|██████████████████████████████████████▋      | 110/128 [3:14:47<31:45][A
+  Iter 3 group sampling:  87%|███████████████████████████████████████      | 111/128 [3:16:34<30:04][A
+  Iter 3 group sampling:  88%|███████████████████████████████████████▍     | 112/128 [3:18:20<28:20][A
+  Iter 3 group sampling:  88%|███████████████████████████████████████▋     | 113/128 [3:20:07<26:36][A
+  Iter 3 group sampling:  89%|████████████████████████████████████████     | 114/128 [3:21:54<24:50][A
+  Iter 3 group sampling:  90%|████████████████████████████████████████▍    | 115/128 [3:23:41<23:05][A
+  Iter 3 group sampling:  91%|████████████████████████████████████████▊    | 116/128 [3:25:28<21:20][A
+  Iter 3 group sampling:  91%|█████████████████████████████████████████▏   | 117/128 [3:27:14<19:33][A
+  Iter 3 group sampling:  92%|█████████████████████████████████████████▍   | 118/128 [3:29:01<17:47][A
+  Iter 3 group sampling:  93%|█████████████████████████████████████████▊   | 119/128 [3:30:48<16:00][A
+  Iter 3 group sampling:  94%|██████████████████████████████████████████▏  | 120/128 [3:32:29<13:59][A
+  Iter 3 group sampling:  95%|██████████████████████████████████████████▌  | 121/128 [3:34:15<12:18][A
+  Iter 3 group sampling:  95%|██████████████████████████████████████████▉  | 122/128 [3:36:02<10:35][A
+  Iter 3 group sampling:  96%|███████████████████████████████████████████▏ | 123/128 [3:37:49<08:50][A
+  Iter 3 group sampling:  97%|███████████████████████████████████████████▌ | 124/128 [3:39:36<07:05][A
+  Iter 3 group sampling:  98%|███████████████████████████████████████████▉ | 125/128 [3:41:23<05:19][A
+  Iter 3 group sampling:  98%|████████████████████████████████████████████▎| 126/128 [3:43:09<03:33][A
+  Iter 3 group sampling:  99%|████████████████████████████████████████████▋| 127/128 [3:44:56<01:46][A
+  Iter 3 group sampling: 100%|█████████████████████████████████████████████| 128/128 [3:46:42<00:00][A
+                                                                                                    [AW0401 14:31:45.032000 1473558 site-packages/torch/distributed/elastic/agent/server/api.py:739] Received 15 death signal, shutting down workers
+W0401 14:31:45.035000 1473558 site-packages/torch/distributed/elastic/multiprocessing/api.py:1010] Sending process 1475648 closing signal SIGTERM
+Traceback (most recent call last):
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/bin/accelerate", line 8, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/accelerate/commands/accelerate_cli.py", line 50, in main
+    args.func(args)
+    ~~~~~~~~~^^^^^^
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/accelerate/commands/launch.py", line 1390, in launch_command
+    deepspeed_launcher(args)
+    ~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/accelerate/commands/launch.py", line 1076, in deepspeed_launcher
+    distrib_run.run(args)
+    ~~~~~~~~~~~~~~~^^^^^^
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/torch/distributed/run.py", line 982, in run
+    elastic_launch(
+    ~~~~~~~~~~~~~~~
+        config=config,
+        ~~~~~~~~~~~~~~
+        entrypoint=cmd,
+        ~~~~~~~~~~~~~~~
+    )(*cmd_args)
+    ~^^^^^^^^^^^
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/torch/distributed/launcher/api.py", line 170, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/torch/distributed/launcher/api.py", line 308, in launch_agent
+    result = agent.run()
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/torch/distributed/elastic/metrics/api.py", line 134, in wrapper
+    result = f(*args, **kwargs)
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/torch/distributed/elastic/agent/server/api.py", line 731, in run
+    result = self._invoke_run(role)
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/torch/distributed/elastic/agent/server/api.py", line 908, in _invoke_run
+    time.sleep(monitor_interval)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/lib/python3.13/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 86, in _terminate_process_handler
+    raise SignalException(f"Process {os.getpid()} got signal: {sigval}", sigval=sigval)
+torch.distributed.elastic.multiprocessing.api.SignalException: Process 1473558 got signal: 15
