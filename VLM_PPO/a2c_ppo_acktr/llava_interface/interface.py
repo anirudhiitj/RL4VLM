@@ -36,8 +36,11 @@ def llava_generate(value_model, tokenizer, input_ids, image_tensor, args):
     return values, padded_output_ids, outputs, sum_log_probs, action_tokens_log_prob
 
 def llava_evaluate(value_model, input_ids, output_ids, image_tensor, temperature, thought_prob_coef):
-    if output_ids.size(0) != 1:
-        input_ids = input_ids.broadcast_to(output_ids.size(0), input_ids.size(-1))
+    B = output_ids.size(0)
+    if B != 1:
+        input_ids = input_ids.broadcast_to(B, input_ids.size(-1))
+    if image_tensor.size(0) == 1 and B > 1:
+        image_tensor = image_tensor.expand(B, -1, -1, -1)
     base = value_model.base
     image_tensor = image_tensor.to(base.device, dtype=base.dtype)
     output_ids = output_ids.to(base.device)
@@ -58,6 +61,8 @@ def llava_evaluate(value_model, input_ids, output_ids, image_tensor, temperature
     values = value_model.value_head(hidden_states)
     scores = scores * (1/temperature)
     scores = scores.to(torch.float32)
+    # Sanitize before log_softmax to prevent NaN from exploded logits
+    scores = torch.nan_to_num(scores, nan=0.0, posinf=1e4, neginf=-1e4)
     log_probs = torch.nn.functional.log_softmax(scores, dim=-1)
     log_probs = log_probs.to(torch.bfloat16)
     output_ids_mask = (output_ids != 0)[:, 1:]
@@ -66,18 +71,28 @@ def llava_evaluate(value_model, input_ids, output_ids, image_tensor, temperature
     target = torch.tensor([345,1774,1264]).to(base.device)
     # tokens for text string:'"action":' (torch.tensor([[345,1774,1264]]))
     matches = (unfolded == target).all(dim = -1)
-    match_index = matches.nonzero(as_tuple=True)[-1]
-    if match_index.shape[0] >= 1:
-        match_index = match_index[-1].unsqueeze(0)
-    else:
-        try:
-            match_index = output_ids_mask.nonzero(as_tuple=False)[-4,1]
-        except:
-            sum_log_prob = torch.tensor([-2]).to(base.device)
-            action_tokens_log_prob = torch.tensor([-1]).to(base.device)
-            return values, sum_log_prob, action_tokens_log_prob
-    ## omitting the second token for calculating log prob, because its logprb is very very small
-    thought_log_prob = torch.sum(selected_log_probs[:,1:match_index-1], dim = 1)
-    action_tokens_log_prob = torch.sum(selected_log_probs[:,match_index-1:], dim = 1)
-    sum_log_prob = thought_prob_coef*thought_log_prob + action_tokens_log_prob
+
+    # Per-sample match_index handling (supports batch>1)
+    sum_log_probs_list = []
+    action_log_probs_list = []
+    for b in range(B):
+        sample_matches = matches[b].nonzero(as_tuple=True)[0]
+        if sample_matches.shape[0] >= 1:
+            mi = sample_matches[-1].item()
+        else:
+            sample_nonzero = output_ids_mask[b].nonzero(as_tuple=False)
+            if sample_nonzero.shape[0] >= 4:
+                mi = sample_nonzero[-4, 0].item()
+            else:
+                sum_log_probs_list.append(torch.tensor(-2.0, device=base.device))
+                action_log_probs_list.append(torch.tensor(-1.0, device=base.device))
+                continue
+        ## omitting the second token for calculating log prob, because its logprb is very very small
+        thought_lp = selected_log_probs[b, 1:mi-1].sum()
+        action_lp = selected_log_probs[b, mi-1:].sum()
+        sum_log_probs_list.append(thought_prob_coef * thought_lp + action_lp)
+        action_log_probs_list.append(action_lp)
+
+    sum_log_prob = torch.stack(sum_log_probs_list)
+    action_tokens_log_prob = torch.stack(action_log_probs_list)
     return values, sum_log_prob, action_tokens_log_prob

@@ -188,6 +188,12 @@ def get_args():
     parser.add_argument("--log-dir", type=str, default=None,
                         help='directory for saving training logs, metrics, and checkpoints')
 
+    # GRPO arguments
+    parser.add_argument("--group-size", type=int, default=8,
+                        help='Number of group samples per state for GRPO (G)')
+    parser.add_argument("--grpo-kl-coef", type=float, default=0.01,
+                        help='KL penalty coefficient for GRPO against reference policy')
+
     # arguments for wandb
     parser.add_argument("--use-wandb", default=False, action='store_true')
     parser.add_argument("--wandb-project", type=str, default='test')

@@ -7,7 +7,7 @@ Key differences from PPO:
 - PPO-clipped surrogate with group-relative advantages
 - Optional KL penalty against SFT reference policy
 
-Pipeline: SFT (full-weight, 1 epoch) → GRPO (LoRA)
+Pipeline: SFT (full-weight, 1 epoch) -> GRPO (LoRA)
 """
 from patch import replace_llama_attn_with_xformers_attn
 replace_llama_attn_with_xformers_attn()
@@ -57,7 +57,16 @@ from functools import partial
 from typing import List, Optional
 from peft import LoraConfig, get_peft_model
 from transformers import AutoTokenizer, AutoImageProcessor
+from transformers import LogitsProcessorList, LogitsProcessor as HFLogitsProcessor
 import transformers
+
+
+class SafeLogitsProcessor(HFLogitsProcessor):
+    """Replace NaN/Inf logits with finite values to prevent multinomial sampling errors."""
+    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:
+        scores = scores.to(torch.float32)
+        scores = torch.nan_to_num(scores, nan=0.0, posinf=1e4, neginf=-1e4)
+        return scores
 
 from tqdm import tqdm
 
@@ -162,11 +171,14 @@ def save_checkpoint(actor_critic, optimizer, lr_scheduler, iteration, log_dir, l
         model = actor_critic.module if hasattr(actor_critic, 'module') else actor_critic
         value_model = model.value_model
         base_model = value_model.base if hasattr(value_model, 'base') else value_model
+
         if hasattr(base_model, 'save_pretrained'):
             base_model.save_pretrained(os.path.join(ckpt_dir, "lora_adapters"))
             logger.info(f"  Saved LoRA adapters to {ckpt_dir}/lora_adapters")
+
         if hasattr(value_model, 'value_head'):
             torch.save(value_model.value_head.state_dict(), os.path.join(ckpt_dir, "value_head.pt"))
+
         torch.save({
             'iteration': iteration,
             'optimizer_state_dict': optimizer.state_dict() if optimizer is not None else None,
@@ -178,63 +190,93 @@ def save_checkpoint(actor_critic, optimizer, lr_scheduler, iteration, log_dir, l
 
 def generate_group_outputs(actor_critic, obs, tokenizer, INPUT_IDS, args, group_size):
     """
-    Generate G different outputs for the same observation using temperature sampling.
-
-    Returns:
-        group_output_ids: (G, max_output_len) tensor of padded output ids
-        group_log_probs: (G,) tensor of log probs for each generation
-        group_text_actions: list of G decoded text strings
-        group_actions: (G, 1) tensor of parsed discrete actions
+    Generate G different outputs for the same observation using batched generation.
+    All G samples are generated in a single forward pass for ~4x speedup over sequential.
     """
-    group_output_ids = []
-    group_log_probs = []
-    group_text_actions = []
-    group_actions = []
-    group_action_tokens_log_probs = []
+    model = actor_critic.module if hasattr(actor_critic, 'module') else actor_critic
+    base = model.value_model.base
+    projection_f = model.projection_f
 
-    projection_f = actor_critic.module.projection_f if hasattr(actor_critic, 'module') else actor_critic.projection_f
+    # Process image once
+    image_tensor = model.process_obs(obs)
+    image_tensor = image_tensor.to(base.device, dtype=base.dtype)
 
+    # Prepare inputs_embeds once from prompt + image
+    _, _, _, _, inputs_embeds, _ = base.prepare_inputs_labels_for_multimodal(
+        INPUT_IDS.to(base.device), None, None, None, None, image_tensor)
+    inputs_embeds = inputs_embeds.to(base.device, dtype=base.dtype)
+
+    # Batch: repeat inputs_embeds for G parallel samples
+    inputs_embeds_batch = inputs_embeds.repeat(group_size, 1, 1)
+
+    # Switch to eval mode so gradient checkpointing doesn't disable use_cache
+    # and interfere with autoregressive position tracking during generation.
+    was_training = base.training
+    base.eval()
+
+    # Generate all G samples in one batched forward pass
+    _safe_logits_proc = LogitsProcessorList([SafeLogitsProcessor()])
+    with torch.inference_mode():
+        outputs = base.generate(
+            inputs_embeds=inputs_embeds_batch,
+            do_sample=True,
+            temperature=args.temperature,
+            num_beams=args.num_beams,
+            max_new_tokens=args.max_new_tokens,
+            use_cache=True,
+            return_dict_in_generate=True,
+            pad_token_id=tokenizer.eos_token_id,
+            logits_processor=_safe_logits_proc,
+        )
+        output_ids = outputs['sequences']  # (G, gen_len)
+
+    # Decode all G outputs to text
+    group_text_actions = tokenizer.batch_decode(output_ids, skip_special_tokens=True)
+
+    # Pad each sample's actual tokens to fixed length, matching sequential behavior.
+    # In batched generation, shorter sequences are padded with eos_token_id by HF generate;
+    # we extract only actual tokens (up to first EOS) and zero-pad the rest so that
+    # llava_evaluate's mask (output_ids != 0) correctly ignores padding.
+    eos_id = tokenizer.eos_token_id
+    padded_output_ids = torch.zeros(group_size, 2 * args.max_new_tokens,
+                                     dtype=output_ids.dtype, device=output_ids.device)
     for g in range(group_size):
-        with torch.no_grad():
-            # act() returns (value, output_ids, action, action_log_prob, action_tokens_log_prob)
-            # where action is already the projected discrete action (integer tensor)
-            value, output_id, action, action_log_prob, action_tokens_log_prob = actor_critic.act(
-                obs, INPUT_IDS=INPUT_IDS)
+        seq = output_ids[g]
+        eos_positions = (seq == eos_id).nonzero(as_tuple=True)[0]
+        if len(eos_positions) > 0:
+            actual_len = eos_positions[0].item() + 1  # include first EOS
+        else:
+            actual_len = seq.size(0)
+        copy_len = min(actual_len, padded_output_ids.size(1))
+        padded_output_ids[g, :copy_len] = seq[:copy_len]
 
-        group_output_ids.append(output_id)
-        group_log_probs.append(action_log_prob)
-        # Decode output_ids to get the text for logging
-        text = tokenizer.decode(list(filter(lambda num: num != 0, output_id[0].tolist())))
-        group_text_actions.append(text)
-        # action is already the discrete action from act() — no need to call projection_f again
-        group_actions.append(action)
-        group_action_tokens_log_probs.append(action_tokens_log_prob)
+    # Restore training mode after generation
+    if was_training:
+        base.train()
 
-    # Stack
-    group_output_ids = torch.cat(group_output_ids, dim=0)  # (G, max_output_len)
-    group_log_probs = torch.cat(group_log_probs, dim=0)    # (G,)
-    group_actions_tensor = torch.cat(group_actions, dim=0)  # (G, 1)
+    # Evaluate log probs for all G samples in one batched forward pass
+    with torch.no_grad():
+        _, group_log_probs, _ = llava_evaluate(
+            model.value_model, INPUT_IDS,
+            padded_output_ids,
+            image_tensor,
+            args.temperature, args.thought_prob_coef)
 
-    return group_output_ids, group_log_probs, group_text_actions, group_actions_tensor, group_action_tokens_log_probs
+    # Project text outputs to discrete actions (handles list of G strings)
+    group_actions_tensor = projection_f(group_text_actions)
+
+    return padded_output_ids, group_log_probs, group_text_actions, group_actions_tensor
 
 
 def evaluate_group_in_env(envs, group_actions, group_text_actions, args):
     """
-    Evaluate each of G actions in the environment by stepping the underlying env directly
-    and recording rewards. We save/restore env state for each group member so all G actions
-    are evaluated from the same state.
-
-    Returns:
-        group_rewards: (G,) tensor of rewards
-        group_dones: (G,) list of done flags
-        group_infos: list of G info dicts
+    Evaluate each of G actions from the same state by saving/restoring env state.
     """
     raw_env = envs.envs[0] if hasattr(envs, 'envs') else envs.venv.envs[0]
     underlying = raw_env
     while hasattr(underlying, 'env'):
         underlying = underlying.env
 
-    # Save env state (deep copy mutable lists)
     saved_cards_num = list(underlying.cards_num)
     saved_cards = list(underlying.cards)
     saved_formula = list(underlying.formula)
@@ -246,14 +288,12 @@ def evaluate_group_in_env(envs, group_actions, group_text_actions, args):
     group_infos = []
 
     for g in range(len(group_actions)):
-        # Restore env state before each evaluation
         underlying.cards_num = list(saved_cards_num)
         underlying.cards = list(saved_cards)
         underlying.formula = list(saved_formula)
         underlying.used_cards = list(saved_used_cards)
         underlying.card_imgs = list(saved_card_imgs)
 
-        # Step the underlying env directly (not through wrappers)
         action_int = group_actions[g].item() if group_actions[g].dim() == 0 else group_actions[g][0].item()
         obs_np, reward, terminated, truncated, info = underlying.step(action_int)
         done = terminated or truncated
@@ -348,9 +388,8 @@ def main():
     # Enable gradient checkpointing to reduce memory usage
     if hasattr(base, "gradient_checkpointing_enable"):
         base.gradient_checkpointing_enable()
-        logger.info("Gradient checkpointing enabled")
 
-    # Apply LoRA
+    # Apply LoRA — same config as PPO
     base_lora_config = LoraConfig(
         r=128, lora_alpha=256,
         target_modules=find_all_linear_names(base, args.train_vision),
@@ -359,7 +398,7 @@ def main():
     if args.use_lora:
         base = get_peft_model(base, base_lora_config)
 
-    # GRPO: still use VLMValue for the base model, but not for advantage computation
+    # GRPO still wraps in VLMValue for the base model, but advantages are group-relative (no value head used)
     value_model = VLMValue(base)
     value_model = value_model.to(model_device)
 
@@ -387,11 +426,11 @@ def main():
                              value_model=value_model, projection_f=projection_f,
                              INPUT_IDS=INPUT_IDS, args=args)
 
-    # Only optimize LoRA params (no value head needed for GRPO advantages)
+    # Optimizer — same as PPO
     optimizer = optim.Adam(actor_critic.value_model.parameters(), lr=args.init_lr, eps=args.eps, weight_decay=args.weight_decay)
     lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.lr_max_steps, eta_min=args.end_lr)
 
-    AcceleratorState().deepspeed_plugin.deepspeed_config['train_micro_batch_size_per_gpu'] = 1
+    AcceleratorState().deepspeed_plugin.deepspeed_config['train_micro_batch_size_per_gpu'] = args.mini_batch_size
     actor_critic, optimizer, lr_scheduler = accelerator.prepare(actor_critic, optimizer, lr_scheduler)
 
     # GRPO agent
@@ -405,28 +444,32 @@ def main():
         group_size=group_size,
         kl_coef=grpo_kl_coef,
         max_grad_norm=args.max_grad_norm,
-        ref_model=None,  # No reference model KL penalty by default
+        ref_model=None,
     )
 
-    # Tracking
+    # Tracking — same deques as PPO
     episode_rewards = deque(maxlen=args.eval_num_per_episode)
     episode_success_rate = deque(maxlen=args.eval_num_per_episode)
-    all_group_rewards = []
     start = time.time()
 
-    # Each iteration: collect num_steps states, each with G group samples
     num_updates = int(args.num_env_steps) // args.num_steps // args.num_processes
     total_timesteps = 0
 
     logger.info(f"\n{'='*80}")
     logger.info(f"  GRPO Configuration")
+    logger.info(f"  Env: {args.env_name}")
     logger.info(f"  Group size (G): {group_size}")
     logger.info(f"  KL coef: {grpo_kl_coef}")
     logger.info(f"  Num updates: {num_updates}")
     logger.info(f"  States per iteration: {args.num_steps}")
     logger.info(f"  GRPO epochs: {args.ppo_epoch}")
+    logger.info(f"  Mini batch size: {args.mini_batch_size}")
+    logger.info(f"  Grad accum steps: {args.grad_accum_steps}")
     logger.info(f"  Init LR: {args.init_lr}, End LR: {args.end_lr}")
+    logger.info(f"  Temperature: {args.temperature}")
+    logger.info(f"  Thought prob coef: {args.thought_prob_coef}")
     logger.info(f"  Use LoRA: {args.use_lora}")
+    logger.info(f"  Action only prompt: {args.action_only_prompt}")
     logger.info(f"{'='*80}\n")
 
     running_episode_rewards = torch.zeros(args.num_processes).flatten()
@@ -462,12 +505,11 @@ def main():
                         bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]')
 
         for step in step_pbar:
-            # Build prompt from current env state
             INPUT_IDS_step = tokenizer_image_token(prompt, tokenizer, IMAGE_TOKEN_INDEX, return_tensors='pt').unsqueeze(0)
             INPUT_IDS_step[INPUT_IDS_step == 0] = 259
 
             # Generate G outputs from the current state
-            group_output_ids, group_log_probs, group_text_actions, group_actions, _ = \
+            group_output_ids, group_log_probs, group_text_actions, group_actions = \
                 generate_group_outputs(actor_critic, obs, tokenizer, INPUT_IDS_step, args, group_size)
 
             # Evaluate each action in env (save/restore underlying state)
@@ -515,7 +557,6 @@ def main():
                 episode_rewards.append(running_episode_rewards[0].item())
                 episode_success_rate.append(1 if running_episode_rewards[0] > 0 else 0)
                 running_episode_rewards[0] = 0
-                # Env auto-resets on done; update prompt for new episode
                 qs = get_prompt(args.env_name, args.action_only_prompt, infos)
                 qs = DEFAULT_IMAGE_TOKEN + "\n" + qs
                 conv = conv_templates[args.conv_mode].copy()
@@ -523,7 +564,7 @@ def main():
                 conv.append_message(conv.roles[1], None)
                 prompt = conv.get_prompt()
 
-            total_timesteps += group_size  # G forward passes per state
+            total_timesteps += group_size
 
         step_pbar.close()
 
@@ -550,16 +591,23 @@ def main():
             fps = int(total_timesteps / (end - start))
 
             mean_reward = np.mean(episode_rewards)
+            median_reward = np.median(episode_rewards)
+            min_reward = np.min(episode_rewards)
+            max_reward = np.max(episode_rewards)
             success_rate = np.mean(episode_success_rate)
 
-            logger.info(f"\n{'='*60}")
+            logger.info("")
+            logger.info(f"{'='*60}")
             logger.info(f"  GRPO ITERATION {j}/{num_updates}")
+            logger.info(f"{'='*60}")
             logger.info(f"  Timesteps: {total_timesteps} | FPS: {fps} | Elapsed: {elapsed_min:.1f} min")
-            logger.info(f"  Reward mean: {mean_reward:.3f} | Success: {success_rate*100:.1f}%")
+            logger.info(f"  Reward  -> mean: {mean_reward:.3f} | median: {median_reward:.3f} | min: {min_reward:.3f} | max: {max_reward:.3f}")
+            logger.info(f"  Success Rate: {success_rate:.4f} ({success_rate*100:.1f}%)")
             logger.info(f"  Action Loss: {action_loss:.6f} | KL Loss: {kl_loss:.6f}")
             logger.info(f"  Group reward mean: {group_reward_mean:.3f} | std: {group_reward_std:.3f}")
             logger.info(f"  Best-in-group rate: {best_in_group_rate:.3f}")
             logger.info(f"  LR: {current_lr:.2e}")
+            logger.info("")
 
             pbar.set_postfix({
                 'succ': f'{success_rate*100:.1f}%',
@@ -573,9 +621,9 @@ def main():
                 "fps": fps,
                 "elapsed_time_min": round(elapsed_min, 2),
                 "mean_reward": round(mean_reward, 4),
-                "median_reward": round(np.median(episode_rewards), 4),
-                "min_reward": round(np.min(episode_rewards), 4),
-                "max_reward": round(np.max(episode_rewards), 4),
+                "median_reward": round(median_reward, 4),
+                "min_reward": round(min_reward, 4),
+                "max_reward": round(max_reward, 4),
                 "success_rate": round(success_rate, 4),
                 "action_loss": round(action_loss, 6),
                 "kl_loss": round(kl_loss, 6),
@@ -588,7 +636,7 @@ def main():
 
         step_logger.flush()
 
-        # Checkpoint
+        # Checkpoint every 5 iterations
         if (j + 1) % 5 == 0 or j == num_updates - 1:
             logger.info(f"\n  Saving checkpoint at iteration {j}...")
             save_checkpoint(actor_critic, optimizer, lr_scheduler, j, log_dir, logger)
