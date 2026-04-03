@@ -279,14 +279,29 @@ def main():
     base, tokenizer = init_pretrained_model(base, tokenizer, pretrain_mm_adapter = args.pretrain_mm_adapter)
     image_processor = base.get_vision_tower().image_processor
 
-    base_lora_config = LoraConfig(
+    use_dora = getattr(args, 'use_dora', False)
+    if use_dora:
+        import peft as _peft
+        peft_version = tuple(int(x) for x in _peft.__version__.split('.')[:2])
+        if peft_version < (0, 9):
+            raise RuntimeError(
+                f"DoRA requires peft>=0.9.0 but found peft=={_peft.__version__}. "
+                f"Install with: pip install 'peft>=0.9.0'"
+            )
+        logger.info(f"DoRA enabled (peft=={_peft.__version__})")
+
+    lora_kwargs = dict(
             r=128,
             lora_alpha=256,
-            target_modules=find_all_linear_names(base,args.train_vision),
+            target_modules=find_all_linear_names(base, args.train_vision),
             lora_dropout=0.05,
             bias="none",
             task_type="CAUSAL_LM",
-        )
+    )
+    if use_dora:
+        lora_kwargs["use_dora"] = True
+
+    base_lora_config = LoraConfig(**lora_kwargs)
     if args.use_lora:
         base = get_peft_model(base, base_lora_config)
     value_model = VLMValue(base)
@@ -378,6 +393,7 @@ def main():
     logger.info(f"  Thought prob coef (lambda): {args.thought_prob_coef}")
     logger.info(f"  Temperature: {args.temperature}")
     logger.info(f"  Use LoRA: {args.use_lora}")
+    logger.info(f"  Use DoRA: {getattr(args, 'use_dora', False)}")
     logger.info(f"  Action only prompt: {args.action_only_prompt}")
     logger.info(f"{'='*80}\n")
     

@@ -6,24 +6,24 @@ export CONDA_DEFAULT_ENV=rl4vlm_clean
 eval "$(conda shell.bash hook)"
 conda activate rl4vlm_clean
 
-WORKTREE="/mnt/raid/rl_gaming/RL4VLM_dora"
-export PYTHONPATH="${WORKTREE}/gym-cards:${WORKTREE}:${PYTHONPATH}"
+REPO="/mnt/raid/rl_gaming/RL4VLM"
+export PYTHONPATH="${REPO}/gym-cards:${REPO}/VLM_PPO:${PYTHONPATH}"
 export TOKENIZERS_PARALLELISM=false
 export CUDA_VISIBLE_DEVICES="6"
 
-cd "${WORKTREE}/VLM_PPO/scripts"
+cd "${REPO}/VLM_PPO/scripts"
 
 echo "=========================================="
-echo "  DoRA RL Training - Points24"
+echo "  DoRA+PPO RL Training - Points24"
 echo "  GPU: 6 | Env: rl4vlm_clean"
-echo "  Worktree: ${WORKTREE}"
-echo "  Log dir: ${WORKTREE}/VLM_PPO/rl_logs/points24_dora"
+echo "  Repo: ${REPO}"
+echo "  Log dir: ${REPO}/rl_logs/points24_dora"
 echo "  Start: $(date)"
 echo "=========================================="
 
 accelerate launch \
     --config_file config_zero2.yaml \
-    --main_process_port 29381 \
+    --main_process_port 29384 \
     ../main.py \
     --env-name gym_cards/Points24-v0 \
     --init-lr 1e-5 \
@@ -44,6 +44,6 @@ accelerate launch \
     --use-lora \
     --use-dora \
     --train-vision all \
-    --log-dir ../rl_logs/points24_dora
+    --log-dir /mnt/raid/rl_gaming/RL4VLM/rl_logs/points24_dora
 
 echo "DoRA training complete at $(date)"

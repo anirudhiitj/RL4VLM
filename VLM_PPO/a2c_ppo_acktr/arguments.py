@@ -178,6 +178,8 @@ def get_args():
     parser.add_argument("--num_beams", type=int, default=1)
     parser.add_argument("--cache_dir", type=str, default=None)
     parser.add_argument("--use-lora", default=False, action='store_true')
+    parser.add_argument("--use-dora", default=False, action='store_true',
+                        help='Use DoRA (Weight-Decomposed Low-Rank Adaptation) instead of standard LoRA')
     parser.add_argument("--train-vision", type=str, default='all')
     parser.add_argument("--thought-prob-coef", type=float, default=1.0, help='any number between 0-1, multiplier for the log thought probability')
     parser.add_argument("--action_only_prompt", default=False, action='store_true')
