@@ -1,5 +1,6 @@
 {
     "python.defaultInterpreterPath": "/home/rl_gaming/miniconda3/envs/rl4vlm_clean/bin/python",
+    "python.terminal.activateEnvironment": false,
     "python.analysis.extraPaths": [
         "${workspaceFolder}/LLaVA",
         "${workspaceFolder}/gym-cards",

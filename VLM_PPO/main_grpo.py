@@ -209,9 +209,14 @@ def generate_group_outputs(actor_critic, obs, tokenizer, INPUT_IDS, args, group_
     # Batch: repeat inputs_embeds for G parallel samples
     inputs_embeds_batch = inputs_embeds.repeat(group_size, 1, 1)
 
-    # Switch to eval mode so gradient checkpointing doesn't disable use_cache
-    # and interfere with autoregressive position tracking during generation.
+    # Disable gradient checkpointing before generation so HF doesn't force use_cache=False.
+    # HF checks `is_gradient_checkpointing` on the model — for PEFT models the flag lives on
+    # the inner LLM, so we walk down: PEFT -> base_model -> model (LlavaLlamaForCausalLM).
     was_training = base.training
+    inner = base.base_model.model if hasattr(base, "base_model") else base
+    gc_was_enabled = getattr(inner, "is_gradient_checkpointing", False)
+    if gc_was_enabled:
+        inner.gradient_checkpointing_disable()
     base.eval()
 
     # Generate all G samples in one batched forward pass
@@ -250,9 +255,11 @@ def generate_group_outputs(actor_critic, obs, tokenizer, INPUT_IDS, args, group_
         copy_len = min(actual_len, padded_output_ids.size(1))
         padded_output_ids[g, :copy_len] = seq[:copy_len]
 
-    # Restore training mode after generation
+    # Restore training mode and gradient checkpointing after generation
     if was_training:
         base.train()
+    if gc_was_enabled:
+        inner.gradient_checkpointing_enable()
 
     # Evaluate log probs for all G samples in one batched forward pass
     with torch.no_grad():
