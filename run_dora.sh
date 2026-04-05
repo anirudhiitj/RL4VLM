@@ -17,7 +17,7 @@ echo "=========================================="
 echo "  DoRA+PPO RL Training - Points24"
 echo "  GPU: 6 | Env: rl4vlm_clean"
 echo "  Repo: ${REPO}"
-echo "  Log dir: ${REPO}/rl_logs/points24_dora"
+echo "  Log dir: ${REPO}/rl_logs/points24_dora_v2"
 echo "  Start: $(date)"
 echo "=========================================="
 
@@ -26,7 +26,7 @@ accelerate launch \
     --main_process_port 29384 \
     ../main.py \
     --env-name gym_cards/Points24-v0 \
-    --init-lr 1e-5 \
+    --init-lr 1e-6 \
     --end-lr 1e-9 \
     --lr_max_steps 25 \
     --eval-num-per-episode 200 \
@@ -44,6 +44,8 @@ accelerate launch \
     --use-lora \
     --use-dora \
     --train-vision all \
-    --log-dir /mnt/raid/rl_gaming/RL4VLM/rl_logs/points24_dora
+    --entropy-coef 0.05 \
+    --max-grad-norm 0.5 \
+    --log-dir /mnt/raid/rl_gaming/RL4VLM/rl_logs/points24_dora_v2
 
 echo "DoRA training complete at $(date)"
