@@ -196,6 +196,17 @@ def get_args():
     parser.add_argument("--grpo-kl-coef", type=float, default=0.01,
                         help='KL penalty coefficient for GRPO against reference policy')
 
+    # Meta-RL arguments
+    parser.add_argument("--meta-lr", type=float, default=1e-4,
+                        help='Meta-learning outer loop learning rate (beta) for Reptile')
+    parser.add_argument("--inner-steps", type=int, default=5,
+                        help='Number of PPO update steps per inner loop task (K)')
+    parser.add_argument("--meta-batch-size", type=int, default=3,
+                        help='Number of tasks per meta-batch (N)')
+    parser.add_argument("--meta-strategy", type=str, default="reptile",
+                        choices=["reptile", "fomaml"],
+                        help='Meta-learning strategy')
+
     # arguments for wandb
     parser.add_argument("--use-wandb", default=False, action='store_true')
     parser.add_argument("--wandb-project", type=str, default='test')
